@@ -1,0 +1,58 @@
+<?php
+
+namespace App\Http\Controllers\Auth;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\LoginRequest;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
+
+class AuthenticatedSessionController extends Controller
+{
+    /**
+     * Display the login view.
+     */
+    public function create(): View
+    {
+        return view('auth.login');
+    }
+
+    /**
+     * Handle an incoming authentication request.
+     */
+    public function store(LoginRequest $request): RedirectResponse
+    {
+        $request->authenticate();
+
+        $request->session()->regenerate();
+
+        return redirect()->intended($this->redirectByRole($request->user()->role));
+    }
+
+    /**
+     * Destroy an authenticated session.
+     */
+    public function destroy(Request $request): RedirectResponse
+    {
+        Auth::guard('web')->logout();
+
+        $request->session()->invalidate();
+
+        $request->session()->regenerateToken();
+
+        return redirect('/');
+    }
+
+    protected function redirectByRole(string $role): string
+    {
+        return match ($role) {
+            'admin' => route('admin.dashboard', absolute: false),
+            'donor' => route('donor.dashboard', absolute: false),
+            'recipient' => route('recipient.dashboard', absolute: false),
+            'hospital' => route('hospital.dashboard', absolute: false),
+            default => route('profile.edit', absolute: false),
+        };
+    }
+}

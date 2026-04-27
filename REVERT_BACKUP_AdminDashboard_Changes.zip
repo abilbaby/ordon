@@ -1,0 +1,9 @@
+Backup of all files before donor score enhancements:
+- app/Http/Controllers/AdminController.php (original)
+- resources/views/components/score-breakdown.blade.php (delete)
+- resources/views/admin/dashboard.blade.php (original)
+- resources/views/admin/donors.blade.php (original)
+- resources/views/admin/matches.blade.php (original)
+- TODO.md (delete)
+
+To restore: Use git reset or manual revert.

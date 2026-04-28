@@ -1,234 +1,214 @@
 <x-app-layout>
     <x-slot name="title">Recipient Dashboard</x-slot>
 
+    @php
+        $status = strtoupper((string) $recipient->status);
+        $matchStatus = $latestMatch?->status ? strtoupper((string) $latestMatch->status) : 'PENDING';
+        $currentStatus = $status === 'REJECTED'
+            ? 'Rejected'
+            : ($recipient->admin_approved ? 'Approved' : ($recipient->identity_verified || $recipient->hospital_verified ? 'Verified' : 'Pending'));
+        $queueLabel = $queuePosition ? $queuePosition.'/'.$queueSize : 'N/A';
+        $maskedId = $recipient->masked_identity;
+        $identityStatus = $recipient->identity_verified ? 'Verified' : 'Pending';
+        $timelineStages = ['Registered', 'Verified', 'Matched', 'Approved', 'Completed'];
+        $timelineCompleted = [
+            'Registered' => true,
+            'Verified' => $recipient->identity_verified || $recipient->hospital_verified || $recipient->admin_approved || in_array($status, ['VERIFIED', 'MATCHED', 'APPROVED', 'COMPLETED'], true),
+            'Matched' => (bool) $latestMatch || in_array($status, ['MATCHED', 'APPROVED', 'COMPLETED'], true),
+            'Approved' => $recipient->admin_approved || in_array($matchStatus, ['APPROVED', 'COMPLETED'], true),
+            'Completed' => $status === 'COMPLETED' || $matchStatus === 'COMPLETED',
+        ];
+        $badgeClass = fn (?string $value) => match (strtolower((string) $value)) {
+            'approved', 'verified', 'completed', 'matched' => 'badge-approved',
+            'rejected', 'failed' => 'badge-rejected',
+            default => 'badge-pending',
+        };
+    @endphp
+
     @unless($accountApproved)
-        <div class="mb-6 rounded-2xl bg-amber-100 text-amber-800 px-4 py-3">
-            Registration complete. Your recipient account is pending admin ID verification and approval. Dashboard features are locked until approval.
+        <div class="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            Waiting for approval. Your registration is complete, and hospital/admin verification is still in progress.
         </div>
     @endunless
 
-    <div class="card-pro mb-6" x-data="{ open: localStorage.getItem('recipient_journey_board') !== '0' }" x-init="$watch('open', v => localStorage.setItem('recipient_journey_board', v ? '1' : '0'))">
-        <div class="flex items-center justify-between mb-3">
-            <h3 class="text-lg font-semibold">Recipient Care Journey Board</h3>
-            <button type="button" @click="open = !open" class="text-xs rounded-lg border border-slate-300 px-2 py-1 text-slate-600 hover:bg-slate-100" x-text="open ? 'Collapse' : 'Expand'"></button>
-        </div>
-        <div x-show="open" x-transition class="grid md:grid-cols-4 gap-3 text-sm">
-            <div class="rounded-xl border border-[#d7e8f4] bg-slate-50 p-3">
-                <p class="text-slate-500">Current Stage</p>
-                <p class="font-semibold">{{ $recipient->status }}</p>
-            </div>
-            <div class="rounded-xl border border-[#d7e8f4] bg-slate-50 p-3">
-                <p class="text-slate-500">Compatibility Index</p>
-                <p class="font-semibold">{{ $compatibilityIndex ? $compatibilityIndex.'%' : 'Pending' }}</p>
-            </div>
-            <div class="rounded-xl border border-[#d7e8f4] bg-slate-50 p-3">
-                <p class="text-slate-500">Approved Matches</p>
-                <p class="font-semibold">{{ $approvedMatchesCount }}</p>
-            </div>
-            <div class="rounded-xl border border-[#d7e8f4] bg-slate-50 p-3">
-                <p class="text-slate-500">Emergency Requests</p>
-                <p class="font-semibold">{{ $emergencyRequestCount }}</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="card-pro mb-6">
-        <h3 class="text-lg font-semibold mb-3">Identity Shield</h3>
-        @php
-            $maskedId = $recipient->identity_number ? str_repeat('*', max(strlen($recipient->identity_number) - 4, 0)).substr($recipient->identity_number, -4) : 'N/A';
-        @endphp
-        <div class="grid md:grid-cols-3 gap-3 text-sm">
-            <div class="rounded-xl bg-slate-50 border border-[#d7e8f4] p-3">ID Type: <strong>{{ strtoupper($recipient->identity_type ?? 'N/A') }}</strong></div>
-            <div class="rounded-xl bg-slate-50 border border-[#d7e8f4] p-3">ID Number: <strong>{{ $maskedId }}</strong></div>
-            <div class="rounded-xl border p-3 {{ $recipient->identity_verified ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-amber-50 border-amber-200 text-amber-800' }}">
-                Verification: <strong>{{ $recipient->identity_verified ? 'Verified by Admin' : 'Pending Admin Verification' }}</strong>
-            </div>
-        </div>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+    <section class="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div class="card-pro">
-            <p class="text-slate-500">Urgency</p>
-            <p class="text-3xl font-semibold mt-2 uppercase">{{ $recipient->urgency_level }}</p>
+            <p class="text-sm font-medium text-slate-500">Current Status</p>
+            <div class="mt-3 flex items-end justify-between gap-3">
+                <p class="text-3xl font-bold text-slate-950">{{ $currentStatus }}</p>
+                <span class="{{ $badgeClass($currentStatus) }}">{{ $currentStatus }}</span>
+            </div>
         </div>
         <div class="card-pro">
-            <p class="text-slate-500">Waiting Time</p>
-            <p class="text-3xl font-semibold mt-2">{{ $recipient->waiting_time }} days</p>
-        </div>
-        <div class="card-pro">
-            <p class="text-slate-500">Match Status</p>
-            <p class="text-3xl font-semibold mt-2">{{ $latestMatch->status ?? 'Pending' }}</p>
-        </div>
-        <div class="card-pro">
-            <p class="text-slate-500">Queue Position</p>
-            <p class="text-3xl font-semibold mt-2">{{ $queuePosition ?? 'N/A' }}<span class="text-base font-normal text-slate-500"> / {{ $queueSize }}</span></p>
-        </div>
-        <div class="card-pro">
-            <p class="text-slate-500">Hospital Approval</p>
-            <p class="text-3xl font-semibold mt-2">{{ $recipient->hospital_verified ? 'Yes' : 'Pending' }}</p>
-        </div>
-        <div class="card-pro">
-            <p class="text-slate-500">Admin Approval</p>
-            <p class="text-3xl font-semibold mt-2">{{ $recipient->admin_approved ? 'Approved' : 'Pending' }}</p>
-        </div>
-    </div>
-
-    <div class="card-pro mt-6" x-data="{ open: localStorage.getItem('recipient_advanced_insights') !== '0' }" x-init="$watch('open', v => localStorage.setItem('recipient_advanced_insights', v ? '1' : '0'))">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold">Advanced Recipient Insights</h3>
-            <button type="button" @click="open = !open" class="text-xs rounded-lg border border-slate-300 px-2 py-1 text-slate-600 hover:bg-slate-100" x-text="open ? 'Collapse' : 'Expand'"></button>
-        </div>
-        <div x-show="open" x-transition class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-            <div class="rounded-xl border border-[#d7e8f4] bg-slate-50 p-3">
-                <p class="font-semibold text-slate-800">Clinical Priority Signal</p>
-                <p class="text-slate-600 mt-1">Urgency, waiting duration, and emergency status are continuously reflected in your queue rank.</p>
-            </div>
-            <div class="rounded-xl border border-[#d7e8f4] bg-slate-50 p-3">
-                <p class="font-semibold text-slate-800">Approval Intelligence</p>
-                <p class="text-slate-600 mt-1">Hospital verification and admin approval directly control when advanced transplant actions unlock.</p>
-            </div>
-            <div class="rounded-xl border border-[#d7e8f4] bg-slate-50 p-3">
-                <p class="font-semibold text-slate-800">Match Explainability</p>
-                <p class="text-slate-600 mt-1">Recent match updates provide transparent score-based context for donor-recipient suitability.</p>
+            <p class="text-sm font-medium text-slate-500">Match Status</p>
+            <div class="mt-3 flex items-end justify-between gap-3">
+                <p class="text-3xl font-bold text-slate-950">{{ ucfirst(strtolower($matchStatus)) }}</p>
+                <span class="{{ $badgeClass($matchStatus) }}">{{ ucfirst(strtolower($matchStatus)) }}</span>
             </div>
         </div>
-    </div>
-
-    <div class="mt-6 card-pro">
-        <h3 class="text-lg font-semibold mb-3">My Request (Hospital Managed)</h3>
-        <p class="text-sm text-slate-600 mb-4">
-            Recipient clinical/request details are maintained by your hospital team. You can monitor status, history, and match progress here.
-        </p>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div class="rounded-xl border border-[#d7e8f4] bg-slate-50 p-3"><strong>Organ Needed:</strong> {{ $recipient->organ_needed }}</div>
-            <div class="rounded-xl border border-[#d7e8f4] bg-slate-50 p-3"><strong>Blood Group:</strong> {{ $recipient->blood_group }}</div>
-            <div class="rounded-xl border border-[#d7e8f4] bg-slate-50 p-3"><strong>Urgency:</strong> {{ strtoupper($recipient->urgency_level) }}</div>
-            <div class="rounded-xl border border-[#d7e8f4] bg-slate-50 p-3"><strong>Waiting Time:</strong> {{ $recipient->waiting_time }} days</div>
-            <div class="rounded-xl border border-[#d7e8f4] bg-slate-50 p-3"><strong>Region:</strong> {{ $recipient->region ?? 'N/A' }}</div>
-            <div class="rounded-xl border border-[#d7e8f4] bg-slate-50 p-3"><strong>Identity Verified:</strong> {{ $recipient->identity_verified ? 'Yes' : 'Pending' }}</div>
+        <div class="card-pro">
+            <p class="text-sm font-medium text-slate-500">Queue Position</p>
+            <div class="mt-3 flex items-end justify-between gap-3">
+                <p class="text-3xl font-bold text-slate-950">{{ $queueLabel }}</p>
+                <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">Active queue</span>
+            </div>
         </div>
-    </div>
+    </section>
 
-    <div class="card-pro mt-6">
-        <h3 class="text-lg font-semibold mb-4">Status Timeline</h3>
-        <div class="space-y-2 mb-4">
-            @forelse ($statusHistories as $entry)
-                <div class="rounded-xl border border-[#d7e8f4] p-3 flex justify-between text-sm">
-                    <span>{{ $entry->old_status ?? 'N/A' }} -> <strong>{{ $entry->new_status }}</strong></span>
-                    <span class="text-slate-500">{{ $entry->changed_at?->diffForHumans() }}</span>
-                </div>
-            @empty
-                <p class="text-sm text-slate-500">No timeline events yet.</p>
-            @endforelse
+    <section class="card-pro mt-6">
+        <div class="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h3 class="text-lg font-semibold text-slate-950">Progress Timeline</h3>
+                <p class="text-sm text-slate-500">Your care workflow from registration to transplant completion.</p>
+            </div>
+            <span class="{{ $badgeClass($currentStatus) }}">{{ $currentStatus }}</span>
         </div>
-    </div>
-
-    <div class="card-pro mt-6">
-        <h3 class="text-lg font-semibold mb-4">Notification Preview</h3>
-        <div class="space-y-2">
-            @forelse ($notificationPreview as $notification)
-                <div class="rounded-xl border border-[#d7e8f4] p-3 flex items-center justify-between text-sm">
-                    <span>{{ $notification->title }}</span>
-                    <span class="text-slate-500">{{ $notification->created_at?->diffForHumans() }}</span>
-                </div>
-            @empty
-                <p class="text-sm text-slate-500">No notifications yet.</p>
-            @endforelse
-        </div>
-        <a href="{{ route('notifications.index') }}" class="inline-block mt-3 text-sm text-[#0b6ea2]">Open full notification center</a>
-    </div>
-
-    <div class="card-pro mt-6">
-        <h3 class="text-lg font-semibold mb-4">Live Allocation Flow Model</h3>
-        <p class="text-sm text-slate-600 mb-4">Real-time view of the organ allocation queue. Your position updates dynamically based on urgency, waiting time, and compatibility.</p>
-        <div class="space-y-3">
-            @foreach ($liveQueueSample as $index => $item)
-                <div class="flex items-center gap-4 p-4 rounded-xl border {{ $item->id === $recipient->id ? 'border-blue-300 bg-blue-50' : 'border-slate-200 bg-white' }} shadow-sm">
-                    <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold {{ match($item->urgency_level) { 'high' => 'bg-red-500', 'medium' => 'bg-yellow-500', default => 'bg-green-500' } }}">
-                        {{ $index + 1 }}
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-5">
+            @foreach ($timelineStages as $stage)
+                <div class="rounded-xl border {{ $timelineCompleted[$stage] ? 'border-emerald-200 bg-emerald-50' : 'border-slate-200 bg-slate-50' }} p-4">
+                    <div class="mb-3 flex items-center gap-2">
+                        <span class="flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold {{ $timelineCompleted[$stage] ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-500' }}">
+                            {{ $timelineCompleted[$stage] ? '✓' : $loop->iteration }}
+                        </span>
                     </div>
-                    <div class="flex-1">
-                        <div class="flex items-center gap-2">
-                            <span class="font-medium text-slate-800">{{ ucfirst($item->organ_needed) }} Transplant</span>
-                            <span class="px-2 py-1 rounded-full text-xs font-medium {{ match($item->urgency_level) { 'high' => 'bg-red-100 text-red-800', 'medium' => 'bg-yellow-100 text-yellow-800', default => 'bg-green-100 text-green-800' } }}">
-                                {{ ucfirst($item->urgency_level) }} Priority
-                            </span>
-                            @if($item->id === $recipient->id)
-                                <span class="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Your Position</span>
-                            @endif
-                        </div>
-                        <div class="text-sm text-slate-600 mt-1">
-                            Blood Group: {{ $item->blood_group }} | Waiting: {{ $item->waiting_time }} days
-                        </div>
-                    </div>
-                    <div class="flex-shrink-0">
-                        <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                        </svg>
-                    </div>
+                    <p class="font-semibold {{ $timelineCompleted[$stage] ? 'text-emerald-800' : 'text-slate-500' }}">{{ $stage }}</p>
+                    <p class="mt-1 text-xs {{ $timelineCompleted[$stage] ? 'text-emerald-700' : 'text-slate-400' }}">{{ $timelineCompleted[$stage] ? 'Completed' : 'Pending' }}</p>
                 </div>
             @endforeach
-            @if($liveQueueSample->isEmpty())
-                <div class="text-center py-8 text-slate-500">
-                    <svg class="w-12 h-12 mx-auto mb-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                    </svg>
-                    <p class="text-lg font-medium">Queue is empty</p>
-                    <p class="text-sm">No active recipients in the allocation queue.</p>
-                </div>
-            @endif
         </div>
-        <div class="mt-4 text-center">
-            <p class="text-sm text-slate-500">Showing top 5 positions. Full queue available in advanced views.</p>
-        </div>
-    </div>
-    </div>
+    </section>
 
-    <div class="card-pro mt-6">
-        <h3 class="text-lg font-semibold mb-4">Recent Match Updates</h3>
-        <div class="space-y-3">
-            @forelse ($matchHistory as $match)
-                <div class="rounded-xl border border-[#d7e8f4] p-3 flex justify-between items-center">
-                    <div>
-                        <p class="font-medium text-slate-800">{{ $match->donor->user->name ?? 'Donor' }}</p>
-                        <p class="text-xs text-slate-500">Score {{ $match->score }}</p>
+    <section class="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-[1fr_360px]">
+        <div class="space-y-6">
+            <div class="card-pro">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex flex-wrap items-center gap-2 text-sm">
+                        <span class="font-semibold text-slate-900">{{ strtoupper($recipient->identity_type ?? 'ID') }}</span>
+                        <span class="text-slate-300">|</span>
+                        <span class="font-mono text-slate-700">{{ $maskedId }}</span>
+                        <span class="text-slate-300">|</span>
+                        <span class="{{ $recipient->identity_verified ? 'badge-approved' : 'badge-pending' }}">{{ $identityStatus }}</span>
                     </div>
-                    <span class="text-xs px-3 py-1 rounded-full bg-slate-100">{{ $match->status }}</span>
+                    <p class="text-xs text-slate-500">Identity Shield</p>
                 </div>
-            @empty
-                <p class="text-sm text-slate-500">No match history available yet.</p>
-            @endforelse
-        </div>
-    </div>
+            </div>
 
-    <div class="card-pro mt-6">
-        <h3 class="text-lg font-semibold mb-4">Activity Notifications</h3>
-        <div class="space-y-3">
-            @forelse ($activities as $activity)
-                <div class="rounded-xl border border-[#d7e8f4] px-3 py-2 flex items-center justify-between">
-                    <p class="text-sm text-slate-700"><span class="status-dot status-dot-{{ $activity['type'] ?? 'info' }}"></span>{{ $activity['label'] }}</p>
-                    <span class="text-xs text-slate-500">{{ $activity['time']?->diffForHumans() }}</span>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <div class="card-pro p-4">
+                    <p class="text-sm text-slate-500">Urgency</p>
+                    <p class="mt-2 text-xl font-bold uppercase text-slate-950">{{ $recipient->urgency_level }}</p>
                 </div>
-            @empty
-                <p class="text-sm text-slate-500">No activity yet.</p>
-            @endforelse
-        </div>
-    </div>
+                <div class="card-pro p-4">
+                    <p class="text-sm text-slate-500">Waiting Time</p>
+                    <p class="mt-2 text-xl font-bold text-slate-950">{{ $recipient->waiting_time }} days</p>
+                </div>
+                <div class="card-pro p-4">
+                    <p class="text-sm text-slate-500">Approved Matches</p>
+                    <p class="mt-2 text-xl font-bold text-slate-950">{{ $approvedMatchesCount }}</p>
+                </div>
+                <div class="card-pro p-4">
+                    <p class="text-sm text-slate-500">Emergency Requests</p>
+                    <p class="mt-2 text-xl font-bold text-slate-950">{{ $emergencyRequestCount }}</p>
+                </div>
+            </div>
 
-    <div class="card-pro mt-6">
-        <h3 class="text-lg font-semibold mb-4">My Recipient Feedback</h3>
-        <form method="POST" action="{{ route('recipient.reports.store') }}" class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+            <div class="card-pro">
+                <h3 class="text-lg font-semibold text-slate-950">My Request</h3>
+                <div class="mt-4 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
+                    <div class="rounded-xl bg-slate-50 p-3"><span class="text-slate-500">Organ Needed</span><p class="font-semibold text-slate-900">{{ $recipient->organ_needed }}</p></div>
+                    <div class="rounded-xl bg-slate-50 p-3"><span class="text-slate-500">Blood Group</span><p class="font-semibold text-slate-900">{{ $recipient->blood_group }}</p></div>
+                    <div class="rounded-xl bg-slate-50 p-3"><span class="text-slate-500">Region</span><p class="font-semibold text-slate-900">{{ $recipient->region ?? 'N/A' }}</p></div>
+                    <div class="rounded-xl bg-slate-50 p-3"><span class="text-slate-500">Hospital Approval</span><p class="font-semibold text-slate-900">{{ $recipient->hospital_verified ? 'Verified' : 'Waiting for approval' }}</p></div>
+                </div>
+            </div>
+
+            <div class="card-pro">
+                <h3 class="text-lg font-semibold text-slate-950">Recent Match Updates</h3>
+                <div class="mt-4 space-y-3">
+                    @forelse ($matchHistory as $match)
+                        <div class="flex flex-col gap-2 rounded-xl border border-slate-200 p-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <p class="font-medium text-slate-900">{{ $match->donor->user->name ?? 'Donor' }}</p>
+                                <p class="text-xs text-slate-500">Score {{ $match->score }}</p>
+                            </div>
+                            <span class="{{ $badgeClass($match->status) }}">{{ ucfirst(strtolower($match->status)) }}</span>
+                        </div>
+                    @empty
+                        <div class="rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
+                            No matches yet.
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+
+        <aside class="space-y-6">
+            <div class="card-pro">
+                <div class="mb-4 flex items-center justify-between gap-3">
+                    <h3 class="text-lg font-semibold text-slate-950">Notifications</h3>
+                    <a href="{{ route('notifications.index') }}" class="text-sm font-medium text-cyan-700 hover:text-cyan-900">View All</a>
+                </div>
+                <div class="space-y-3">
+                    @forelse ($notificationPreview->take(5) as $notification)
+                        <div class="rounded-xl border border-slate-200 p-3">
+                            <p class="text-sm font-medium text-slate-900">{{ $notification->title }}</p>
+                            @if($notification->message)
+                                <p class="mt-1 text-xs text-slate-500">{{ \Illuminate\Support\Str::limit($notification->message, 110) }}</p>
+                            @endif
+                            <p class="mt-2 text-xs text-slate-400">{{ $notification->created_at?->diffForHumans() }}</p>
+                        </div>
+                    @empty
+                        <div class="rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
+                            No notifications yet.
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+
+            <div class="card-pro">
+                <h3 class="text-lg font-semibold text-slate-950">Activity</h3>
+                <div class="mt-4 space-y-3">
+                    @forelse ($activities as $activity)
+                        <div class="flex items-start justify-between gap-3 rounded-xl border border-slate-200 p-3">
+                            <p class="text-sm text-slate-700"><span class="status-dot status-dot-{{ $activity['type'] ?? 'info' }}"></span>{{ $activity['label'] }}</p>
+                            <span class="shrink-0 text-xs text-slate-500">{{ $activity['time']?->diffForHumans() }}</span>
+                        </div>
+                    @empty
+                        <div class="rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
+                            No activity yet.
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+        </aside>
+    </section>
+
+    <section class="card-pro mt-6">
+        <h3 class="text-lg font-semibold text-slate-950">My Recipient Feedback</h3>
+        <form method="POST" action="{{ route('recipient.reports.store') }}" class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3" x-data="{ submitting: false }" @submit="submitting = true">
             @csrf
             <input type="hidden" name="scope" value="recipient">
-            <input name="subject" class="rounded-xl border-[#c8dfef]" placeholder="Feedback subject" required>
-            <input name="message" class="rounded-xl border-[#c8dfef] md:col-span-2" placeholder="Describe your issue..." required>
-            <button class="md:col-span-3 rounded-xl bg-slate-900 text-white px-4 py-2.5" @disabled(! $accountApproved)>Submit Feedback</button>
-        </form>
-        @foreach ($reports as $report)
-            <div class="rounded-xl border border-[#d7e8f4] p-3 text-sm mb-2">
-                {{ $report->subject }} - <span class="uppercase">{{ $report->status }}</span>
+            <div>
+                <input name="subject" class="form-control @error('subject') form-control-invalid @enderror" placeholder="Feedback subject" required>
+                @error('subject') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
             </div>
-        @endforeach
-    </div>
-
+            <div class="md:col-span-2">
+                <input name="message" class="form-control @error('message') form-control-invalid @enderror" placeholder="Describe your issue..." required>
+                @error('message') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+            </div>
+            <button class="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60 md:col-span-3" @disabled(! $accountApproved) :disabled="submitting || {{ $accountApproved ? 'false' : 'true' }}">
+                <span x-show="!submitting">Submit Feedback</span>
+                <span x-show="submitting">Submitting...</span>
+            </button>
+        </form>
+        <div class="mt-4 space-y-2">
+            @forelse ($reports as $report)
+                <div class="rounded-xl border border-slate-200 p-3 text-sm">
+                    {{ $report->subject }} - <span class="uppercase">{{ $report->status }}</span>
+                </div>
+            @empty
+                <p class="text-sm text-slate-500">No feedback submitted yet.</p>
+            @endforelse
+        </div>
+    </section>
 </x-app-layout>

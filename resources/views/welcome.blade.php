@@ -6,266 +6,307 @@
     <title>ORDON | Organ Donation and Transplant Platform</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-[#eef7fc] text-slate-900 font-sans antialiased scroll-smooth">
-    <header class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-[#d7e8f4]" x-data="{ mobileMenu: false }">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-            <a href="/" class="flex items-center gap-3">
-                <img src="{{ asset('images/ordon-logo.png') }}" class="h-12 w-auto rounded-xl" alt="ORDON logo">
-                <div>
-                    <p class="font-semibold tracking-wide text-[#0b3650]">ORDON</p>
-                    <p class="text-xs text-slate-500">Organ Donation and Transplant Platform</p>
+<body class="bg-slate-50 text-slate-900 font-sans antialiased">
+    @php
+        $ctaRoute = Route::has('register') ? route('register') : route('login');
+    @endphp
+
+    <header class="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur" x-data="{ mobileMenu: false }">
+        <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+            <a href="{{ url('/') }}" class="flex min-w-0 items-center gap-3">
+                <img src="{{ asset('images/ordon-logo.png') }}" class="h-11 w-auto rounded-xl" alt="ORDON logo">
+                <div class="min-w-0">
+                    <p class="font-semibold tracking-wide text-slate-950">ORDON</p>
+                    <p class="hidden text-xs text-slate-500 sm:block">Organ Donation and Transplant Platform</p>
                 </div>
             </a>
-            <nav class="hidden md:flex items-center gap-6 text-sm text-slate-600">
-                <a href="#about" class="hover:text-[#0b6ea2] transition-all duration-200">About Us</a>
-                <a href="#stories" class="hover:text-[#0b6ea2] transition-all duration-200">Success Stories</a>
-                <a href="#faq" class="hover:text-[#0b6ea2] transition-all duration-200">FAQ</a>
-                <a href="{{ route('contact') }}" class="hover:text-[#0b6ea2] transition-all duration-200">Contact Us</a>
+
+            <nav class="hidden items-center gap-7 text-sm font-medium text-slate-600 md:flex">
+                <a href="#features" class="hover:text-cyan-700">Features</a>
+                <a href="#process" class="hover:text-cyan-700">How it works</a>
+                <a href="#stories" class="hover:text-cyan-700">Stories</a>
+                <a href="#faq" class="hover:text-cyan-700">FAQ</a>
+                <a href="{{ route('contact') }}" class="hover:text-cyan-700">Contact</a>
             </nav>
-            <div class="flex items-center gap-3">
-<!--                 <button @click="mobileMenu = !mobileMenu" class="md:hidden rounded-xl border border-[#9ac8e4] px-3 py-2 text-sm text-[#0b3650]">
+
+            <div class="flex items-center gap-2">
+                <button type="button" @click="mobileMenu = ! mobileMenu" class="rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 md:hidden">
                     Menu
-                </button>  -->
+                </button>
                 @auth
-                    <a href="{{ route('dashboard') }}" class="px-4 py-2 rounded-xl bg-[#0b6ea2] text-white font-medium transition-all duration-200 hover:bg-[#0a5f8b]">Dashboard</a>
-                    <form method="POST" action="{{ route('logout') }}" class="inline-block">
+                    <a href="{{ route('dashboard') }}" class="rounded-xl bg-cyan-700 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-800">Dashboard</a>
+                    <form method="POST" action="{{ route('logout') }}" class="hidden sm:block">
                         @csrf
-                        <button class="px-4 py-2 rounded-xl border border-rose-200 text-rose-700 hover:bg-rose-50 transition-all duration-200">
+                        <button class="rounded-xl border border-rose-200 px-4 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-50">
                             Logout
                         </button>
                     </form>
                 @else
-                    <a href="{{ route('login') }}" class="px-4 py-2 rounded-xl border border-[#9ac8e4] hover:bg-[#e9f4fb] transition-all duration-200">Login</a>
-                    <a href="{{ route('register') }}" class="px-4 py-2 rounded-xl bg-[#0b6ea2] text-white font-semibold hover:bg-[#0a5f8b] transition-all duration-200">Register</a>
+                    <a href="{{ route('login') }}" class="hidden rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 sm:inline-flex">Login</a>
+                    <a href="{{ route('register') }}" class="rounded-xl bg-slate-950 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800">Register</a>
                 @endauth
             </div>
         </div>
-        <div x-show="mobileMenu" x-transition class="md:hidden border-t border-[#d7e8f4] bg-white px-6 py-3">
-            <nav class="flex flex-col gap-2 text-sm text-slate-700">
-                <a @click="mobileMenu=false" href="#about" class="rounded-xl px-2 py-2 hover:bg-[#eef7fc]">About Us</a>
-                <a @click="mobileMenu=false" href="#stories" class="rounded-xl px-2 py-2 hover:bg-[#eef7fc]">Success Stories</a>
-                <a @click="mobileMenu=false" href="#faq" class="rounded-xl px-2 py-2 hover:bg-[#eef7fc]">FAQ</a>
-                <a @click="mobileMenu=false" href="{{ route('contact') }}" class="rounded-xl px-2 py-2 hover:bg-[#eef7fc]">Contact Us</a>
+
+        <div x-show="mobileMenu" x-transition class="border-t border-slate-200 bg-white px-4 py-3 md:hidden">
+            <nav class="flex flex-col gap-1 text-sm font-medium text-slate-700">
+                <a @click="mobileMenu = false" href="#features" class="rounded-xl px-3 py-2 hover:bg-slate-100">Features</a>
+                <a @click="mobileMenu = false" href="#process" class="rounded-xl px-3 py-2 hover:bg-slate-100">How it works</a>
+                <a @click="mobileMenu = false" href="#stories" class="rounded-xl px-3 py-2 hover:bg-slate-100">Stories</a>
+                <a @click="mobileMenu = false" href="#faq" class="rounded-xl px-3 py-2 hover:bg-slate-100">FAQ</a>
+                <a @click="mobileMenu = false" href="{{ route('contact') }}" class="rounded-xl px-3 py-2 hover:bg-slate-100">Contact</a>
+                @auth
+                    <form method="POST" action="{{ route('logout') }}" class="sm:hidden">
+                        @csrf
+                        <button class="w-full rounded-xl px-3 py-2 text-left text-rose-700 hover:bg-rose-50">Logout</button>
+                    </form>
+                @endauth
             </nav>
         </div>
     </header>
 
-    <section class="max-w-7xl mx-auto px-6 pt-16 pb-12 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center fade-in-up">
-        <div>
-            <p class="inline-flex px-3 py-1 rounded-full text-xs bg-[#d9eefb] text-[#0b6ea2] mb-4">Trusted digital organ donation ecosystem</p>
-            <h1 class="text-4xl lg:text-6xl font-semibold leading-tight text-[#0b3650]">Helping patients receive life-saving organ transplants faster.</h1>
-            <p class="text-slate-600 mt-6 text-lg leading-relaxed">
-                ORDON brings together donors, recipients, and hospitals with transparent workflows and intelligent matching
-                to support fair and timely transplant decisions.
-            </p>
-            <div class="mt-8 flex flex-col sm:flex-row flex-wrap gap-3">
-                <a href="{{ route('register') }}" class="text-center px-6 py-3 rounded-2xl bg-[#0b6ea2] text-white font-semibold hover:bg-[#0a5f8b] transition-all duration-200">Become a Donor</a>
-                <a href="{{ route('register') }}" class="text-center px-6 py-3 rounded-2xl border border-[#9ac8e4] hover:bg-[#e9f4fb] transition-all duration-200">Need a Transplant</a>
+    <main>
+        <section class="relative overflow-hidden bg-white">
+            <div class="absolute inset-x-0 top-0 h-full bg-[linear-gradient(180deg,#ecfeff_0%,#ffffff_46%,#f8fafc_100%)]"></div>
+            <div class="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-2 lg:px-8 lg:py-24">
+                <div>
+                    <p class="inline-flex rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-cyan-700">
+                        Trusted transplant coordination
+                    </p>
+                    <h1 class="mt-6 text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
+                        Coordinate organ donation with clarity, speed, and trust.
+                    </h1>
+                    <p class="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
+                        ORDON helps donors, recipients, and hospitals manage verified registration, fair matching, and transplant workflows from one secure platform.
+                    </p>
+
+                    <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+                        <a href="{{ $ctaRoute }}" class="inline-flex justify-center rounded-xl bg-cyan-700 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-cyan-800">
+                            Become a Donor
+                        </a>
+                        <a href="{{ $ctaRoute }}" class="inline-flex justify-center rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-100">
+                            Request a Transplant
+                        </a>
+                    </div>
+
+                    <div class="mt-8 grid gap-3 text-sm text-slate-700 sm:grid-cols-3">
+                        @foreach (['Secure identity verification', 'Hospital-approved workflows', 'Real-time tracking'] as $indicator)
+                            <div class="flex items-center gap-2">
+                                <span class="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                                    <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                        <path fill-rule="evenodd" d="M16.704 5.29a1 1 0 0 1 .006 1.414l-7.25 7.313a1 1 0 0 1-1.42 0L3.29 9.267a1 1 0 1 1 1.42-1.414l4.04 4.04 6.54-6.596a1 1 0 0 1 1.414-.006Z" clip-rule="evenodd" />
+                                    </svg>
+                                </span>
+                                <span>{{ $indicator }}</span>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                <div class="relative">
+                    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <img src="{{ asset('images/ordon-landing-hero.png') }}" alt="Organ donation awareness" class="mx-auto w-full max-w-md rounded-xl object-cover">
+                        <div class="mt-6 border-t border-slate-200 pt-5">
+                            <h3 class="text-center text-xl font-semibold text-slate-950">Why Organ Donation Matters</h3>
+                            <p class="mx-auto mt-2 max-w-md text-center text-sm leading-6 text-slate-600">
+                                A single donor can save multiple lives through timely and safe transplantation. Early registration, family awareness, and hospital guidance can reduce delays for patients in critical need.
+                            </p>
+                            <div class="mt-5 flex flex-wrap justify-center gap-2">
+                                <span class="rounded-full bg-cyan-50 px-3 py-1 text-xs font-semibold text-cyan-700">One donor can save lives</span>
+                                <span class="rounded-full bg-cyan-50 px-3 py-1 text-xs font-semibold text-cyan-700">Family consent matters</span>
+                                <span class="rounded-full bg-cyan-50 px-3 py-1 text-xs font-semibold text-cyan-700">Medical guidance first</span>
+                            </div>
+                            <div class="mt-5 grid grid-cols-1 gap-3 text-center sm:grid-cols-3">
+                                <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                                    <p class="text-xs text-slate-500">Potential Lives Helped</p>
+                                    <p class="mt-1 text-lg font-bold text-slate-950">Up to 8</p>
+                                </div>
+                                <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                                    <p class="text-xs text-slate-500">Impact Begins With</p>
+                                    <p class="mt-1 text-lg font-bold text-slate-950">Registration</p>
+                                </div>
+                                <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                                    <p class="text-xs text-slate-500">Best Time to Register</p>
+                                    <p class="mt-1 text-lg font-bold text-slate-950">Today</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="card-pro">
-            <img src="{{ asset('images/ordon-landing-hero.png') }}" alt="ORDON platform hero" class="w-full max-w-md mx-auto rounded-2xl" />
-            <div class="mt-6 border-t border-[#d7e8f4] pt-5 fade-in-up">
-                <h3 class="text-xl font-semibold text-[#0b3650] text-center">Why Organ Donation Matters</h3>
-                <p class="text-sm text-slate-600 text-center mt-2 leading-relaxed">
-                    A single donor can save multiple lives through timely and safe transplantation. Early registration, family awareness,
-                    and informed consent can reduce waiting time for patients in critical need.
+        </section>
+
+        <section class="border-y border-slate-200 bg-slate-100/70">
+            <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+                <div class="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                        <p class="text-sm font-semibold uppercase tracking-wide text-cyan-700">Platform Impact</p>
+                        <h2 class="mt-2 text-2xl font-bold text-slate-950">Trusted records across the transplant network</h2>
+                    </div>
+                    <p class="text-sm text-slate-500">Clear visibility across donors, recipients, hospitals, and donated organs.</p>
+                </div>
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <x-landing.stat-card value="42" label="Organs Donated" detail="Verified donor-organ records" />
+                    <x-landing.stat-card value="128" label="Recipients" detail="Registered recipient profiles" />
+                    <x-landing.stat-card value="96" label="Donors" detail="Available donor profiles" />
+                    <x-landing.stat-card value="18" label="Hospitals" detail="Connected hospital accounts" />
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+            <x-landing.section-heading
+                eyebrow="Platform Features"
+                title="Everything teams need to manage transplant workflows responsibly."
+                description="ORDON replaces disconnected updates with verified records, clear approvals, and transparent progress tracking."
+                align="center"
+            />
+
+            <div class="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+                <x-landing.feature-card title="Smart Matching Engine" description="Prioritizes compatibility, urgency, waiting time, and clinical context for fairer shortlists.">
+                    <x-slot:icon>
+                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7h10M4 17h10M17 5l3 2-3 2M17 15l3 2-3 2M14 7c2 0 3 2 5 2M14 17c2 0 3-2 5-2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </x-slot:icon>
+                </x-landing.feature-card>
+                <x-landing.feature-card title="Secure Identity Verification" description="Keeps donor and recipient records cleaner with verified IDs and approval checkpoints.">
+                    <x-slot:icon>
+                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 2.9 8.5 7 10 4.1-1.5 7-5.5 7-10V6l-7-3Z" stroke-linecap="round" stroke-linejoin="round"/><path d="m9 12 2 2 4-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </x-slot:icon>
+                </x-landing.feature-card>
+                <x-landing.feature-card title="Hospital Coordination" description="Centralizes review, approval, transplant scheduling, and completion updates for care teams.">
+                    <x-slot:icon>
+                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 21V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v16M3 21h18M8 8h5M8 12h5M8 16h2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </x-slot:icon>
+                </x-landing.feature-card>
+                <x-landing.feature-card title="Real-Time Status Tracking" description="Gives every stakeholder a clear view of registration, verification, matching, and approval status.">
+                    <x-slot:icon>
+                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 5-7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </x-slot:icon>
+                </x-landing.feature-card>
+            </div>
+        </section>
+
+        <section id="process" class="bg-white">
+            <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+                <x-landing.section-heading
+                    eyebrow="How it works"
+                    title="A clear path from registration to transplant execution."
+                    description="Each stage is designed to reduce confusion while preserving medical review and accountability."
+                />
+
+                <div class="mt-10 grid grid-cols-1 gap-4 lg:grid-cols-4">
+                    @foreach ([
+                        ['Register', 'Donors and recipients enter structured profiles or hospital-issued invitations.'],
+                        ['Verification', 'Identity, eligibility, and clinical details move through approval checks.'],
+                        ['Matching Process', 'The system ranks possible matches using compatibility and urgency signals.'],
+                        ['Transplant Execution', 'Hospitals validate, schedule, complete, and document the transplant workflow.'],
+                    ] as [$title, $description])
+                        <div class="relative rounded-xl border border-slate-200 bg-slate-50 p-6">
+                            <div class="mb-5 flex h-10 w-10 items-center justify-center rounded-full bg-slate-950 text-sm font-bold text-white">
+                                {{ $loop->iteration }}
+                            </div>
+                            <h3 class="font-semibold text-slate-950">{{ $title }}</h3>
+                            <p class="mt-3 text-sm leading-6 text-slate-600">{{ $description }}</p>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+
+        <section id="stories" class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+            <x-landing.section-heading
+                eyebrow="Success Stories"
+                title="Better coordination creates better outcomes."
+                description="Short examples of how clear workflows help families, hospitals, and transplant teams move with confidence."
+                align="center"
+            />
+
+            <div class="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3">
+                <x-landing.story-card initials="RC" title="Recipient Care Coordinated" description="A recipient profile was verified, reviewed by the hospital, and moved into matching with clear status updates for the care team." />
+                <x-landing.story-card initials="DR" title="Donor Records Verified" description="A donor completed registration with identity checks and organ availability details, helping hospitals review suitable cases faster." />
+                <x-landing.story-card initials="HT" title="Hospital Teams Aligned" description="Hospital staff tracked approvals, match decisions, and transplant readiness from one shared workflow instead of scattered follow-ups." />
+            </div>
+        </section>
+
+        <section id="faq" class="bg-white">
+            <div class="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
+                <x-landing.section-heading
+                    eyebrow="FAQ"
+                    title="Questions people ask before getting started."
+                    description="Simple answers for donors, recipients, and hospital teams evaluating ORDON."
+                    align="center"
+                />
+
+                <div class="mt-10 space-y-3" x-data="{ open: 1 }">
+                    <x-landing.faq-item index="1" question="Who can register on ORDON?">
+                        Donors can register directly. Recipient registration may be managed through hospital workflows depending on verification needs. Hospital and admin access is reviewed before approval.
+                    </x-landing.faq-item>
+                    <x-landing.faq-item index="2" question="How are organ matches prioritized?">
+                        ORDON considers blood compatibility, urgency, waiting time, and clinical status signals to help care teams review matches responsibly.
+                    </x-landing.faq-item>
+                    <x-landing.faq-item index="3" question="Can recipients track their transplant progress?">
+                        Yes. Recipients can follow their status from registration through verification, matching, approval, and completion inside the dashboard.
+                    </x-landing.faq-item>
+                    <x-landing.faq-item index="4" question="Are hospital approvals required before transplant?">
+                        Yes. Hospital review and approval remain part of the workflow before transplant scheduling and completion are recorded.
+                    </x-landing.faq-item>
+                </div>
+            </div>
+        </section>
+
+        <section class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+            <div class="rounded-2xl bg-slate-950 px-6 py-12 text-center text-white shadow-sm sm:px-10">
+                <p class="text-sm font-semibold uppercase tracking-wide text-cyan-200">Start today</p>
+                <h2 class="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Ready to Save a Life?</h2>
+                <p class="mx-auto mt-4 max-w-2xl text-sm leading-6 text-slate-300">
+                    Join a verified transplant workflow built for donors, recipients, and hospitals that need clarity when every step matters.
                 </p>
-                <div class="mt-4 flex flex-wrap justify-center gap-2">
-                    <span class="rounded-full bg-[#e8f4fb] text-[#0b6ea2] text-xs px-3 py-1">One Donor Can Save Lives</span>
-                    <span class="rounded-full bg-[#e8f4fb] text-[#0b6ea2] text-xs px-3 py-1">Family Consent is Important</span>
-                    <span class="rounded-full bg-[#e8f4fb] text-[#0b6ea2] text-xs px-3 py-1">Donate with Medical Guidance</span>
-                </div>
-                <div class="grid grid-cols-3 gap-3 mt-5 text-center">
-                    <div class="rounded-xl border border-[#d7e8f4] bg-slate-50 p-3">
-                        <p class="text-xs text-slate-500">Potential Lives Helped</p>
-                        <p class="text-lg font-semibold text-[#0b3650]">Up to 8</p>
-                    </div>
-                    <div class="rounded-xl border border-[#d7e8f4] bg-slate-50 p-3">
-                        <p class="text-xs text-slate-500">Patients Waiting</p>
-                        <p class="text-lg font-semibold text-[#0b3650]">Many</p>
-                    </div>
-                    <div class="rounded-xl border border-[#d7e8f4] bg-slate-50 p-3">
-                        <p class="text-xs text-slate-500">Best Time to Register</p>
-                        <p class="text-lg font-semibold text-[#0b3650]">Today</p>
-                    </div>
+                <div class="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+                    <a href="{{ $ctaRoute }}" class="rounded-xl bg-white px-6 py-3 text-sm font-semibold text-slate-950 hover:bg-slate-100">Become a Donor</a>
+                    <a href="{{ $ctaRoute }}" class="rounded-xl border border-white/20 px-6 py-3 text-sm font-semibold text-white hover:bg-white/10">Request a Transplant</a>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
+    </main>
 
-    <section id="about" class="max-w-7xl mx-auto px-6 py-12 fade-in-up">
-        <div class="card-pro">
-            <h2 class="text-3xl font-semibold text-[#0b3650]">About Us</h2>
-            <p class="text-slate-600 mt-4 leading-relaxed">
-                ORDON is built to support a safer and more compassionate organ donation journey by connecting donors, recipients,
-                hospitals, and care teams through one transparent ecosystem. We focus on reducing delays in life-saving decisions
-                while maintaining ethical standards, medical responsibility, and trust for families.
-            </p>
-            <p class="text-slate-600 mt-3 leading-relaxed">
-                Our approach highlights responsible donor registration, secure identity verification, hospital-led clinical review,
-                and continuous status visibility so every stakeholder understands what happens next in the transplant process.
-                This helps improve communication, reduce confusion, and strengthen confidence during critical medical situations.
-            </p>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                <div class="rounded-xl border border-[#d7e8f4] bg-slate-50 p-4">
-                    <h3 class="font-semibold text-[#0b3650]">Our Mission</h3>
-                    <p class="text-sm text-slate-600 mt-2">Promote timely, fair, and medically guided organ donation to save more lives.</p>
+    <footer class="border-t border-slate-200 bg-white">
+        <div class="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-12 sm:px-6 md:grid-cols-4 lg:px-8">
+            <div class="md:col-span-2">
+                <div class="flex items-center gap-3">
+                    <img src="{{ asset('images/ordon-logo.png') }}" class="h-11 w-auto rounded-xl" alt="ORDON logo">
+                    <p class="font-semibold text-slate-950">ORDON</p>
                 </div>
-                <div class="rounded-xl border border-[#d7e8f4] bg-slate-50 p-4">
-                    <h3 class="font-semibold text-[#0b3650]">Our Values</h3>
-                    <p class="text-sm text-slate-600 mt-2">Transparency, patient safety, dignity of donors, and accountability in approvals.</p>
+                <p class="mt-4 max-w-md text-sm leading-6 text-slate-600">
+                    ORDON is a secure organ donation and transplant coordination platform for verified registration, hospital approvals, fair matching, and status visibility.
+                </p>
+                <div class="mt-5 flex gap-3">
+                    <a href="#" aria-label="ORDON on LinkedIn" class="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-100">in</a>
+                    <a href="#" aria-label="ORDON on X" class="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-100">X</a>
+                    <a href="#" aria-label="ORDON on Facebook" class="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-100">f</a>
                 </div>
-                <div class="rounded-xl border border-[#d7e8f4] bg-slate-50 p-4">
-                    <h3 class="font-semibold text-[#0b3650]">Our Commitment</h3>
-                    <p class="text-sm text-slate-600 mt-2">Support families with clear updates and ensure each case follows verified workflows.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="stories" class="max-w-7xl mx-auto px-6 py-12 fade-in-up" x-data="{ index: 0, slides: [
-        { title: 'Kidney Match Completed', text: 'A donor and recipient were matched with high urgency scoring and approved within one day.' },
-        { title: 'Hospital-led Coordination', text: 'Hospital teams used ORDON approvals and transplant scheduling to reduce communication delays.' },
-        { title: 'Transparent Family Updates', text: 'Status visibility gave families confidence from registration through transplant completion.' }
-    ] }" x-init="setInterval(() => index = (index + 1) % slides.length, 5000)">
-        <h2 class="text-3xl font-semibold mb-6 text-[#0b3650]">Success Stories</h2>
-        <div class="card-pro min-h-[200px]">
-            <p class="text-[#0b6ea2] text-sm mb-2" x-text="'Story ' + (index + 1)"></p>
-            <h3 class="text-2xl font-semibold text-[#0b3650]" x-text="slides[index].title"></h3>
-            <p class="text-slate-600 mt-4" x-text="slides[index].text"></p>
-            <div class="flex gap-2 mt-6">
-                <template x-for="(slide, i) in slides" :key="i">
-                    <button @click="index = i" class="h-2.5 rounded-full transition-all duration-200"
-                        :class="index === i ? 'w-8 bg-[#0b6ea2]' : 'w-2.5 bg-[#bedcf0]'"></button>
-                </template>
-            </div>
-        </div>
-    </section>
-
-    <section id="faq" class="max-w-7xl mx-auto px-6 py-12 fade-in-up">
-        <h2 class="text-3xl font-semibold mb-6 text-[#0b3650]">Frequently Asked Questions</h2>
-        <div class="space-y-3" x-data="{ open: 1 }">
-            <div class="card-pro">
-                <button @click="open = open === 1 ? 0 : 1" class="w-full text-left flex justify-between items-center">
-                    <span class="font-medium text-[#0b3650]">Who can register on ORDON?</span>
-                    <span x-text="open === 1 ? '-' : '+'"></span>
-                </button>
-                <p x-show="open === 1" x-transition class="text-slate-600 mt-3">Anyone can register as a donor, recipient, or hospital. Admin accounts are managed internally.</p>
-            </div>
-            <div class="card-pro">
-                <button @click="open = open === 2 ? 0 : 2" class="w-full text-left flex justify-between items-center">
-                    <span class="font-medium text-[#0b3650]">How are organ matches prioritized?</span>
-                    <span x-text="open === 2 ? '-' : '+'"></span>
-                </button>
-                <p x-show="open === 2" x-transition class="text-slate-600 mt-3">ORDON uses blood compatibility, urgency level, and waiting time to rank recipients fairly.</p>
-            </div>
-            <div class="card-pro">
-                <button @click="open = open === 3 ? 0 : 3" class="w-full text-left flex justify-between items-center">
-                    <span class="font-medium text-[#0b3650]">Can recipients track their transplant progress?</span>
-                    <span x-text="open === 3 ? '-' : '+'"></span>
-                </button>
-                <p x-show="open === 3" x-transition class="text-slate-600 mt-3">Yes. Every recipient can monitor request status from REGISTERED to COMPLETED inside their dashboard.</p>
-            </div>
-            <div class="card-pro">
-                <button @click="open = open === 4 ? 0 : 4" class="w-full text-left flex justify-between items-center">
-                    <span class="font-medium text-[#0b3650]">Are hospital approvals required before transplant?</span>
-                    <span x-text="open === 4 ? '-' : '+'"></span>
-                </button>
-                <p x-show="open === 4" x-transition class="text-slate-600 mt-3">Yes. Hospitals must review and approve matches before transplant scheduling and completion.</p>
-            </div>
-        </div>
-    </section>
-
-    <footer class="mt-12 border-t border-[#d7e8f4] bg-white">
-        <div class="max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div>
-                <img src="{{ asset('images/ordon-logo.png') }}" class="h-12 w-auto rounded-xl" alt="ORDON logo">
-                <p class="text-slate-500 mt-4 text-sm">ORDON - Organ Donation and Transplant Platform.</p>
             </div>
             <div>
-                <h4 class="font-semibold mb-3 text-[#0b3650]">Quick Links</h4>
-                <ul class="space-y-2 text-slate-500 text-sm">
-                    <li><a href="#about" class="hover:text-[#0b6ea2]">About Us</a></li>
-                    <li><a href="#stories" class="hover:text-[#0b6ea2]">Success Stories</a></li>
-                    <li><a href="#faq" class="hover:text-[#0b6ea2]">FAQ</a></li>
-                    <li><a href="{{ route('contact') }}" class="hover:text-[#0b6ea2]">Contact Us</a></li>
+                <h4 class="font-semibold text-slate-950">Quick Links</h4>
+                <ul class="mt-4 space-y-3 text-sm text-slate-600">
+                    <li><a href="#features" class="hover:text-cyan-700">Features</a></li>
+                    <li><a href="#process" class="hover:text-cyan-700">How it works</a></li>
+                    <li><a href="#stories" class="hover:text-cyan-700">Success Stories</a></li>
+                    <li><a href="#faq" class="hover:text-cyan-700">FAQ</a></li>
                 </ul>
             </div>
             <div>
-                <h4 class="font-semibold mb-3 text-[#0b3650]">Get in Touch</h4>
-                <p class="text-slate-500 text-sm">support@ordon.org</p>
-                <p class="text-slate-500 text-sm mt-1">+880 1234 567890</p>
-                <p class="text-slate-500 text-sm mt-1">Dhaka, Bangladesh</p>
+                <h4 class="font-semibold text-slate-950">Contact</h4>
+                <ul class="mt-4 space-y-3 text-sm text-slate-600">
+                    <li><a href="{{ route('contact') }}" class="hover:text-cyan-700">Contact support</a></li>
+                    <li>support@ordon.org</li>
+                    <li>+880 1234 567890</li>
+                    <li>Kerala, India</li>
+                </ul>
             </div>
         </div>
-        <div class="border-t border-[#d7e8f4] py-4 text-center text-xs text-slate-500">
-            © {{ date('Y') }} ORDON. All rights reserved.
+        <div class="border-t border-slate-200 px-4 py-5 text-center text-xs text-slate-500">
+            &copy; {{ date('Y') }} ORDON. All rights reserved.
         </div>
     </footer>
-
-    <div class="fixed bottom-5 right-5 z-40" x-data="{
-        open: false,
-        text: '',
-        typing: false,
-        messages: [
-            { from: 'bot', text: 'Hello! I am ORDON assistant. Ask about donation, recipient matching, or hospital approvals.', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
-        ],
-        makeReply(value) {
-            if (value.includes('donor')) return 'You can register as a donor, complete your profile, and keep availability ON for matching.';
-            if (value.includes('recipient')) return 'Recipients should update urgency, waiting time, and verify profile to improve matching priority.';
-            if (value.includes('hospital')) return 'Hospitals review MATCHED cases, approve/reject requests, and mark transplants completed.';
-            if (value.includes('contact')) return 'Use the Contact Us page for support: email support@ordon.org.';
-            return 'Thanks for your message. ORDON helps with fair organ matching and transplant coordination.';
-        },
-        send() {
-            if (!this.text.trim()) return;
-            const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            this.messages.push({ from: 'user', text: this.text, time: now });
-            const value = this.text.toLowerCase();
-            this.text = '';
-            this.typing = true;
-            setTimeout(() => {
-                this.messages.push({ from: 'bot', text: this.makeReply(value), time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
-                this.typing = false;
-            }, 700);
-        }
-    }">
-        <button @click="open = !open" class="rounded-full h-14 w-14 bg-[#0b6ea2] text-white shadow-lg hover:bg-[#0a5f8b] transition-all duration-200">💬</button>
-        <div x-show="open" x-transition class="mt-3 w-80 card-pro">
-            <p class="font-semibold text-[#0b3650] mb-2">ORDON Quick Assistant</p>
-            <p class="text-xs text-slate-500 mb-2">Ask me anything about donor registration, matching priority, hospital approvals, or support.</p>
-            <div class="rounded-xl bg-slate-50 p-3 min-h-[170px] max-h-[240px] overflow-y-auto space-y-2">
-                <template x-for="(message, idx) in messages" :key="idx">
-                    <div :class="message.from === 'user' ? 'text-right' : 'text-left'">
-                        <p :class="message.from === 'user' ? 'inline-block bg-[#0b6ea2] text-white' : 'inline-block bg-white text-slate-700'" class="text-sm rounded-xl px-3 py-2 border border-[#d7e8f4]" x-text="message.text"></p>
-                        <p class="text-[10px] text-slate-400 mt-1" x-text="message.time"></p>
-                    </div>
-                </template>
-                <p x-show="typing" class="text-xs text-slate-500 italic">Assistant is typing...</p>
-            </div>
-            <div class="mt-3 flex gap-2">
-                <input x-model="text" @keydown.enter.prevent="send()" class="flex-1 rounded-xl border-[#c8dfef]" placeholder="Ask me anything...">
-                <button @click="send()" class="px-4 rounded-xl bg-[#0b6ea2] text-white">Send</button>
-            </div>
-        </div>
-    </div>
-
-    <div
-        class="fixed bottom-24 right-5 z-40"
-        x-data="{ show: false }"
-        x-init="window.addEventListener('scroll', () => show = window.scrollY > 260)"
-    >
-        <button
-            x-show="show"
-            x-transition
-            @click="window.scrollTo({ top: 0, behavior: 'smooth' })"
-            class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#0b6ea2] to-[#0a5f8b] text-white shadow-lg hover:shadow-xl px-4 py-2.5 transition-all duration-200 border border-[#7ec1e6]/40"
-            aria-label="Back to top"
-        >
-            <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/20 text-sm">↑</span>
-            <span class="text-xs font-semibold tracking-wide">Back to Top</span>
-        </button>
-    </div>
 </body>
 </html>

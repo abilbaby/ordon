@@ -21,7 +21,7 @@ Route::get('/contact-us', function () {
 Route::get('/recipient/register', [RecipientInviteRegistrationController::class, 'show'])->name('recipient.invite.register');
 Route::post('/recipient/register', [RecipientInviteRegistrationController::class, 'store'])->name('recipient.invite.register.store');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'no-cache'])->group(function () {
     Route::get('/dashboard', function () {
         return redirect(match (auth()->user()->role) {
             'admin' => route('admin.dashboard', absolute: false),
@@ -40,7 +40,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllRead'])->name('notifications.mark-all-read');
 });
 
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'no-cache', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
     Route::post('/auto-matching', [AdminController::class, 'runAutoMatching'])->name('auto-matching');
     Route::get('/reports/export/csv', [AdminController::class, 'exportReportsCsv'])->name('reports.export.csv');
@@ -79,7 +79,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/issue-reports/{issueReport}/reopen', [AdminController::class, 'reopenIssueReport'])->name('issue-reports.reopen');
 });
 
-Route::middleware(['auth', 'role:donor'])->prefix('donor')->name('donor.')->group(function () {
+Route::middleware(['auth', 'no-cache', 'role:donor'])->prefix('donor')->name('donor.')->group(function () {
     Route::get('/dashboard', [DonorController::class, 'dashboard'])->name('dashboard');
     Route::get('/matches', [DonorController::class, 'matches'])->name('matches');
     Route::get('/certificate', [DonorController::class, 'certificate'])->name('certificate');
@@ -92,7 +92,7 @@ Route::middleware(['auth', 'role:donor'])->prefix('donor')->name('donor.')->grou
     Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
 });
 
-Route::middleware(['auth', 'role:recipient'])->prefix('recipient')->name('recipient.')->group(function () {
+Route::middleware(['auth', 'no-cache', 'role:recipient'])->prefix('recipient')->name('recipient.')->group(function () {
     Route::get('/dashboard', [RecipientController::class, 'dashboard'])->name('dashboard');
     Route::get('/requests', [RecipientController::class, 'requests'])->name('requests');
     Route::get('/edit-profile', [RecipientController::class, 'editProfileRequest'])->name('edit-profile');
@@ -101,7 +101,7 @@ Route::middleware(['auth', 'role:recipient'])->prefix('recipient')->name('recipi
     Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
 });
 
-Route::middleware(['auth', 'role:hospital'])->prefix('hospital')->name('hospital.')->group(function () {
+Route::middleware(['auth', 'no-cache', 'role:hospital'])->prefix('hospital')->name('hospital.')->group(function () {
     Route::get('/dashboard', [HospitalController::class, 'dashboard'])->name('dashboard');
     Route::get('/invitations', [HospitalController::class, 'invitations'])->name('invitations');
     Route::get('/approvals', [HospitalController::class, 'approvals'])->name('approvals');

@@ -7,7 +7,7 @@
     <title>{{ config('app.name', 'Laravel') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="font-sans antialiased bg-slate-100 text-slate-900">
+<body class="font-sans antialiased bg-slate-50 text-slate-900">
     @php
         $menuByRole = [
             'admin' => [
@@ -80,8 +80,20 @@
             ->where('is_read', false)
             ->count();
     @endphp
-    <header class="bg-white shadow-sm border-b border-slate-200 px-6 py-4 flex items-center justify-between">
-        <div class="flex items-center gap-4">
+    <header class="lg:hidden bg-white shadow-sm border-b border-slate-200 px-4 py-3">
+        <div class="flex items-center justify-between gap-3">
+            <a href="{{ route('dashboard') }}" class="flex items-center gap-2">
+                <img src="{{ asset('images/ordon-logo.png') }}" alt="ORDON logo" class="h-9 w-auto" />
+                <span class="text-base font-semibold text-slate-800">ORDON</span>
+            </a>
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit" class="rounded-lg bg-rose-600 px-3 py-2 text-xs font-medium text-white">
+                    Logout
+                </button>
+            </form>
+        </div>
+        <div class="mt-3 flex flex-wrap items-center gap-2">
             <h1 class="text-xl font-semibold text-slate-800">ORDON Dashboard</h1>
             @if($accountStatus)
                 <span class="px-3 py-1 rounded-full text-sm font-medium {{ $accountStatus === 'Approved' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
@@ -89,20 +101,17 @@
                 </span>
             @endif
         </div>
-        <div class="flex items-center gap-4">
-            <div class="text-sm text-slate-600">
-                Welcome, {{ auth()->user()->name }} ({{ ucfirst($role) }})
-            </div>
-            <form method="POST" action="{{ route('logout') }}" class="inline">
-                @csrf
-                <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors">
-                    Logout
-                </button>
-            </form>
-        </div>
+        <nav class="mt-3 flex gap-2 overflow-x-auto pb-1">
+            @foreach ($menu as $item)
+                <a href="{{ Route::has($item['route']) ? route($item['route']) : '#' }}"
+                    class="whitespace-nowrap rounded-lg px-3 py-2 text-xs font-medium {{ request()->routeIs($item['active']) ? 'bg-cyan-700 text-white' : 'bg-slate-100 text-slate-700' }}">
+                    {{ $item['label'] }}
+                </a>
+            @endforeach
+        </nav>
     </header>
     <div class="min-h-screen flex">
-        <aside class="w-[270px] bg-[#0b3650] text-slate-100 fixed inset-y-0 left-0 p-6 border-r border-[#124a69] flex flex-col h-screen overflow-hidden">
+        <aside class="hidden lg:flex w-[270px] bg-[#0b3650] text-slate-100 fixed inset-y-0 left-0 p-6 border-r border-[#124a69] flex-col h-screen overflow-hidden">
             <a href="{{ route('dashboard') }}" class="mb-8 flex items-center gap-3 shrink-0">
                 <img src="{{ asset('images/ordon-logo.png') }}" alt="ORDON logo" class="h-12 w-auto bg-white rounded-xl p-1" />
             </a>
@@ -113,7 +122,7 @@
                 <nav class="space-y-2">
                    @foreach ($menu as $item)
                         <a href="{{ Route::has($item['route']) ? route($item['route']) : '#' }}"
-                            class="block rounded-2xl px-4 py-3 transition-all duration-200 fade-in {{ request()->routeIs($item['active']) ? 'border-l-4 border-cyan-300 bg-[#125273] text-white' : 'hover:bg-[#125273] text-slate-200' }}">
+                            class="block rounded-xl px-4 py-3 transition-all duration-200 fade-in {{ request()->routeIs($item['active']) ? 'border-l-4 border-cyan-300 bg-[#125273] text-white' : 'hover:bg-[#125273] text-slate-200' }}">
                             {{ $item['label'] }}
                         </a>  
                     @endforeach
@@ -131,35 +140,39 @@
             </div>
         </aside>
 
-        <div class="flex-1 ml-[270px]">
-            <header class="bg-white/95 backdrop-blur border-b border-slate-200 px-8 py-4 flex items-center justify-between sticky top-0 z-20">
-                <div class="flex items-center gap-3">
+        <div class="min-w-0 flex-1 lg:ml-[270px]">
+            <header class="hidden lg:flex bg-white/95 backdrop-blur border-b border-slate-200 px-8 py-4 items-center justify-between sticky top-0 z-20">
+                <div class="min-w-0 flex items-center gap-3">
                     <button type="button" onclick="window.history.length > 1 ? history.back() : window.location.assign('{{ route('dashboard') }}')"
-                        class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 transition-all duration-200">
+                        class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 hover:bg-slate-50">
                         Back
                     </button>
-                    <h2 class="text-2xl font-semibold text-slate-900">{{ $title ?? 'Dashboard' }}</h2>
+                    <h2 class="truncate text-2xl font-semibold text-slate-900">{{ $title ?? 'Dashboard' }}</h2>
                 </div>
-                <div class="flex items-center gap-4">
-                    <input type="text" placeholder="Search..."
-                        class="rounded-2xl border-slate-200 px-4 py-2 text-sm focus:ring-2 focus:ring-[#3ca9d8] shadow-sm">
+                <div class="flex min-w-0 items-center gap-3">
                     <div class="rounded-xl bg-slate-100 px-3 py-2 text-xs text-slate-700">
                         Ops Alerts: <span class="font-semibold">{{ $opsAlerts }}</span>
                     </div>
                     <a href="{{ route('notifications.index') }}" class="rounded-xl bg-slate-100 px-3 py-2 text-xs text-slate-700 hover:bg-slate-200">
                         Notifications: <span class="font-semibold">{{ $unreadNotifications }}</span>
                     </a>
-                    <button class="rounded-xl bg-[#e8f4fb] text-[#0b3650] px-3 py-2 text-xs uppercase">{{ $role }}</button>
+                    <span class="rounded-xl bg-[#e8f4fb] text-[#0b3650] px-3 py-2 text-xs uppercase">{{ $role }}</span>
                     @if ($accountStatus)
                         <span class="rounded-xl px-3 py-2 text-xs {{ $accountStatus === 'Approved' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-800' }}">
                             Account: {{ $accountStatus }}
                         </span>
                     @endif
-                    <span class="rounded-2xl bg-slate-100 px-4 py-2 text-sm">{{ auth()->user()->name ?? 'User' }}</span>
+                    <span class="max-w-48 truncate rounded-xl bg-slate-100 px-4 py-2 text-sm">{{ auth()->user()->name ?? 'User' }}</span>
+                    <form method="POST" action="{{ route('logout') }}" class="shrink-0">
+                        @csrf
+                        <button type="submit" class="rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700">
+                            Logout
+                        </button>
+                    </form>
                 </div>
             </header>
 
-            <main class="p-6 fade-in-up">
+            <main class="p-4 sm:p-6 fade-in-up">
                 @if (session('success'))
                     <div class="mb-4 rounded-2xl bg-emerald-100 text-emerald-800 px-4 py-3">{{ session('success') }}</div>
                 @endif

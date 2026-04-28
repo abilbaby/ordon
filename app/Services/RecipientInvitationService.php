@@ -119,7 +119,7 @@ class RecipientInvitationService
                 'waiting_time' => 0,
                 'status' => 'REGISTERED',
                 'identity_type' => $data->identityType,
-                'identity_number' => $data->identityNumber,
+                'identity_number' => $normalizedIdentityNumber,
                 'identity_number_hash' => $identityHash,
                 'identity_number_last4' => $this->identityNumberService->last4($normalizedIdentityNumber),
                 'identity_verified' => false,

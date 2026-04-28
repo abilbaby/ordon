@@ -5,20 +5,20 @@
         <h3 class="text-lg font-semibold mb-4">Recipient Request Details</h3>
         <p class="text-sm text-slate-600 mb-4">This request profile is maintained by your hospital team after invitation-based onboarding.</p>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-slate-700">
-            <div><strong>Blood Group:</strong> {{ $recipient->blood_group }}</div>
-            <div><strong>Organ Needed:</strong> {{ $recipient->organ_needed }}</div>
-            <div><strong>Urgency Level:</strong> {{ strtoupper($recipient->urgency_level) }}</div>
-            <div><strong>Priority Band:</strong>
+            <div class="rounded-xl bg-slate-50 p-3"><span class="text-sm text-slate-500">Blood Group</span><p class="font-semibold">{{ $recipient->blood_group }}</p></div>
+            <div class="rounded-xl bg-slate-50 p-3"><span class="text-sm text-slate-500">Organ Needed</span><p class="font-semibold">{{ $recipient->organ_needed }}</p></div>
+            <div class="rounded-xl bg-slate-50 p-3"><span class="text-sm text-slate-500">Urgency Level</span><p class="font-semibold">{{ strtoupper($recipient->urgency_level) }}</p></div>
+            <div class="rounded-xl bg-slate-50 p-3"><span class="text-sm text-slate-500">Priority Band</span><p class="font-semibold">
                 @if ($recipient->urgency_level === 'high')
                     Critical
                 @elseif($recipient->urgency_level === 'medium')
                     High
                 @else
                     Standard
-                @endif
+                @endif</p>
             </div>
-            <div><strong>Waiting Time:</strong> {{ $recipient->waiting_time }} days</div>
-            <div><strong>Status:</strong> {{ $recipient->status }}</div>
+            <div class="rounded-xl bg-slate-50 p-3"><span class="text-sm text-slate-500">Waiting Time</span><p class="font-semibold">{{ $recipient->waiting_time }} days</p></div>
+            <div class="rounded-xl bg-slate-50 p-3"><span class="text-sm text-slate-500">Status</span><p class="font-semibold">{{ $recipient->status }}</p></div>
         </div>
     </div>
 </x-app-layout>

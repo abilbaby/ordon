@@ -8,6 +8,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RecipientInviteRegistrationController;
 use App\Http\Controllers\RecipientController;
+use App\Http\Controllers\RecipientUpdateRequestController;
+use App\Http\Controllers\UpdateRequestController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -97,10 +99,9 @@ Route::middleware(['auth', 'no-cache', 'role:donor'])->prefix('donor')->name('do
 Route::middleware(['auth', 'no-cache', 'role:recipient'])->prefix('recipient')->name('recipient.')->group(function () {
     Route::get('/dashboard', [RecipientController::class, 'dashboard'])->name('dashboard');
     Route::get('/requests', [RecipientController::class, 'requests'])->name('requests');
-    Route::get('/edit-profile', [RecipientController::class, 'editProfileRequest'])->name('edit-profile');
-    Route::post('/edit-profile', [RecipientController::class, 'submitProfileChangeRequest'])->name('edit-profile.submit');
-    Route::get('/profile', [RecipientController::class, 'editProfile'])->name('profile');
-    Route::patch('/profile', [RecipientController::class, 'updateProfile'])->name('profile.update');
+    Route::get('/profile', [RecipientUpdateRequestController::class, 'profile'])->name('profile');
+    Route::patch('/update/direct-fields', [RecipientController::class, 'updateDirectFields'])->name('update.direct-fields');
+    Route::post('/update/request/submit', [RecipientUpdateRequestController::class, 'submitUpdateRequest'])->name('update.request.submit');
     Route::get('/matches', [RecipientController::class, 'matches'])->name('matches');
     Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
 });
@@ -131,6 +132,18 @@ Route::middleware(['auth', 'no-cache', 'role:hospital'])->prefix('hospital')->na
     Route::post('/doctors', [HospitalController::class, 'addDoctor'])->name('doctors.add');
     Route::post('/inventory', [HospitalController::class, 'addInventory'])->name('inventory.add');
     Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
+    
+    // Recipient Management
+    Route::get('/recipients', [RecipientUpdateRequestController::class, 'recipients'])->name('recipients');
+    Route::get('/recipient/{id}/details', [RecipientUpdateRequestController::class, 'recipientDetails'])->name('recipient.details');
+    
+    // Update Request Management
+    Route::get('/update-requests', [UpdateRequestController::class, 'pendingRequests'])->name('update-requests');
+    Route::get('/update-history', [UpdateRequestController::class, 'history'])->name('update-history');
+    Route::get('/update-request/{id}', [UpdateRequestController::class, 'show'])->name('update-request.show');
+    Route::get('/update-history/{id}', [UpdateRequestController::class, 'historyDetails'])->name('update-history.details');
+    Route::post('/update-request/{id}/approve-selected', [UpdateRequestController::class, 'approveSelected'])->name('update-request.approve-selected');
+    Route::post('/update-request/{id}/reject', [UpdateRequestController::class, 'reject'])->name('update-request.reject');
 });
 
 require __DIR__.'/auth.php';

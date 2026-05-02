@@ -15,7 +15,7 @@ class HospitalCreateInviteRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // Required fields
+            // Required fields - Initial Verified Data
             'recipient_name' => ['required', 'string', 'min:2', 'max:100', 'regex:/^[a-zA-Z\s]+$/'],
             'email' => ['required', 'email', 'max:255'],
             'phone' => ['required', 'digits_between:10,15'],
@@ -24,6 +24,8 @@ class HospitalCreateInviteRequest extends FormRequest
             'blood_group' => ['required', Rule::in(['O-', 'O+', 'A-', 'A+', 'B-', 'B+', 'AB-', 'AB+'])],
             'organ_needed' => ['required', 'string', 'max:50'],
             'urgency_level' => ['required', Rule::in(['high', 'medium', 'low'])],
+            'waiting_time' => ['required', 'integer', 'min:0', 'max:3650'],
+            'other_organs_needed' => ['nullable', 'string', 'max:255'],
             
             // Optional fields
             'notes' => ['nullable', 'string', 'max:1000'],
@@ -65,6 +67,11 @@ class HospitalCreateInviteRequest extends FormRequest
             'organ_needed.max' => 'Organ type cannot exceed 50 characters.',
             'urgency_level.required' => 'Urgency level is required.',
             'urgency_level.in' => 'Please select a valid urgency level.',
+            'waiting_time.required' => 'Waiting time is required.',
+            'waiting_time.integer' => 'Waiting time must be a number.',
+            'waiting_time.min' => 'Waiting time cannot be negative.',
+            'waiting_time.max' => 'Waiting time cannot exceed 3650 days.',
+            'other_organs_needed.max' => 'Other organs list cannot exceed 255 characters.',
             'notes.max' => 'Medical notes cannot exceed 1000 characters.',
             'medical_notes.max' => 'Medical notes cannot exceed 1000 characters.',
             'contact_number.digits_between' => 'Contact number must be between 10 and 15 digits.',

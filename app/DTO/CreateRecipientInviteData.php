@@ -14,6 +14,8 @@ final class CreateRecipientInviteData
         public readonly ?string $gender = null,
         public readonly ?string $organNeeded = null,
         public readonly ?string $urgencyLevel = null,
+        public readonly ?int $waitingTime = null,
+        public readonly ?string $otherOrgansNeeded = null,
         public readonly ?string $medicalNotes = null,
         public readonly ?string $contactNumber = null,
     ) {

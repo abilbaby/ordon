@@ -96,6 +96,7 @@ class AdminController extends Controller
         $blacklisted = request()->string('blacklisted')->toString();
         $dateFrom = request()->string('date_from')->toString();
         $dateTo = request()->string('date_to')->toString();
+        $hospitalId = request()->string('hospital_id')->toString();
 
         $query = Donor::with('user')->latest();
         if ($search !== '') {
@@ -126,9 +127,13 @@ class AdminController extends Controller
         if ($dateTo !== '') {
             $query->whereDate('created_at', '<=', $dateTo);
         }
+        if ($hospitalId !== '') {
+            $query->where('hospital_id', (int) $hospitalId);
+        }
 
         return view('admin.donors', [
             'donors' => $query->paginate(10)->withQueryString(),
+            'hospitals' => Hospital::orderBy('name')->get(['id', 'name']),
             'filters' => [
                 'search' => $search,
                 'status' => $status,
@@ -136,6 +141,7 @@ class AdminController extends Controller
                 'blood_group' => $bloodGroup,
                 'fraud' => $fraud,
                 'blacklisted' => $blacklisted,
+                'hospital_id' => $hospitalId,
                 'date_from' => $dateFrom,
                 'date_to' => $dateTo,
             ],

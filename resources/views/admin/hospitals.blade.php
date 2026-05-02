@@ -71,8 +71,9 @@
                                 {{ $hospital->blacklisted ? 'Blacklisted' : 'Active' }}
                             </td>
                             <td class="p-3">
-                                <div x-show="!edit" class="flex items-center gap-2">
+                                <div x-show="!edit" class="flex flex-wrap gap-2">
                                     <span class="px-2.5 py-1 rounded-full text-[11px] {{ $reviewStatusClass }}">{{ $reviewStatus }}</span>
+                                    <a href="{{ route('admin.doctors', ['hospital_id' => $hospital->id]) }}" class="rounded-lg bg-blue-600 text-white px-2 py-1 text-xs hover:bg-blue-700">View Doctors</a>
                                     <button type="button" @click="edit = true" class="rounded-lg border border-slate-300 px-2 py-1 text-xs text-slate-700 hover:bg-slate-100">Edit</button>
                                 </div>
                                 <div x-show="edit" x-transition class="flex flex-wrap gap-2">

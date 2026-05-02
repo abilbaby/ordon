@@ -16,9 +16,11 @@
                 ['label' => 'Recipients', 'route' => 'admin.recipients', 'active' => 'admin.recipients'],
                 ['label' => 'Flagged Recipients', 'route' => 'admin.flagged-recipients', 'active' => 'admin.flagged-recipients'],
                 ['label' => 'Matches', 'route' => 'admin.matches', 'active' => 'admin.matches'],
-                ['label' => 'Hospitals', 'route' => 'admin.hospitals', 'active' => 'admin.hospitals'],
-                ['label' => 'Doctors', 'route' => 'admin.doctors', 'active' => 'admin.doctors'],
-                ['label' => 'Organs', 'route' => 'admin.organs', 'active' => 'admin.organs'],
+                ['label' => 'Hospitals', 'route' => 'admin.hospitals', 'active' => 'admin.hospitals', 'submenu' => [
+                    ['label' => 'Hospital List', 'route' => 'admin.hospitals', 'active' => 'admin.hospitals'],
+                    ['label' => 'Doctors', 'route' => 'admin.doctors', 'active' => 'admin.doctors'],
+                    ['label' => 'Organs', 'route' => 'admin.organs', 'active' => 'admin.organs'],
+                ]],
                 ['label' => 'Reports', 'route' => 'admin.reports', 'active' => 'admin.reports'],
                 ['label' => 'Donation Logs', 'route' => 'admin.donation-logs', 'active' => 'admin.donation-logs'],
                 ['label' => 'Notifications', 'route' => 'notifications.index', 'active' => 'notifications.*'],
@@ -35,11 +37,15 @@
                 ['label' => 'Profile', 'route' => 'recipient.profile', 'active' => 'recipient.profile*'],
                 ['label' => 'My Request', 'route' => 'recipient.requests', 'active' => 'recipient.requests'],
                 ['label' => 'Match Status', 'route' => 'recipient.matches', 'active' => 'recipient.matches'],
-                ['label' => 'Edit Profile', 'route' => 'recipient.edit-profile', 'active' => 'recipient.edit-profile'],
                 ['label' => 'Notifications', 'route' => 'notifications.index', 'active' => 'notifications.*'],
             ],
             'hospital' => [
                 ['label' => 'Dashboard', 'route' => 'hospital.dashboard', 'active' => 'hospital.dashboard'],
+                ['label' => 'Recipient Management', 'route' => '#', 'active' => '', 'submenu' => [
+                    ['label' => 'All Recipients', 'route' => 'hospital.recipients', 'active' => 'hospital.recipients'],
+                    ['label' => 'Update Requests', 'route' => 'hospital.update-requests', 'active' => 'hospital.update-requests*'],
+                    ['label' => 'Update History', 'route' => 'hospital.update-history', 'active' => 'hospital.update-history'],
+                ]],
                 ['label' => 'Approvals', 'route' => 'hospital.approvals', 'active' => 'hospital.approvals'],
                 ['label' => 'Transplants', 'route' => 'hospital.transplants', 'active' => 'hospital.transplants'],
                 ['label' => 'Planner', 'route' => 'hospital.planner', 'active' => 'hospital.planner'],
@@ -124,10 +130,32 @@
                 <div class="h-full overflow-y-auto pr-1 [scrollbar-width:thin] [scrollbar-color:#2b6a8f_transparent]">
                 <nav class="space-y-2">
                    @foreach ($menu as $item)
-                        <a href="{{ Route::has($item['route']) ? route($item['route']) : '#' }}"
-                            class="block rounded-xl px-4 py-3 transition-all duration-200 fade-in {{ request()->routeIs($item['active']) ? 'border-l-4 border-cyan-300 bg-[#125273] text-white' : 'hover:bg-[#125273] text-slate-200' }}">
-                            {{ $item['label'] }}
-                        </a>  
+                        @if(isset($item['submenu']))
+                            <!-- Dropdown Menu -->
+                            <div x-data="{ open: false }" class="space-y-1">
+                                <button @click="open = !open" 
+                                    class="w-full flex items-center justify-between rounded-xl px-4 py-3 transition-all duration-200 fade-in {{ request()->routeIs($item['active']) ? 'border-l-4 border-cyan-300 bg-[#125273] text-white' : 'hover:bg-[#125273] text-slate-200' }}">
+                                    <span>{{ $item['label'] }}</span>
+                                    <svg class="w-4 h-4 transition-transform {{ request()->routeIs($item['active']) ? 'rotate-90' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                </button>
+                                <div x-show="open" x-transition class="ml-4 space-y-1">
+                                    @foreach ($item['submenu'] as $subItem)
+                                        <a href="{{ Route::has($subItem['route']) ? route($subItem['route']) : '#' }}"
+                                            class="block rounded-lg px-3 py-2 text-sm transition-all duration-200 {{ request()->routeIs($subItem['active']) ? 'bg-cyan-600 text-white' : 'hover:bg-[#125273] text-slate-300' }}">
+                                            {{ $subItem['label'] }}
+                                        </a>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @else
+                            <!-- Regular Menu Item -->
+                            <a href="{{ Route::has($item['route']) ? route($item['route']) : '#' }}"
+                                class="block rounded-xl px-4 py-3 transition-all duration-200 fade-in {{ request()->routeIs($item['active']) ? 'border-l-4 border-cyan-300 bg-[#125273] text-white' : 'hover:bg-[#125273] text-slate-200' }}">
+                                {{ $item['label'] }}
+                            </a>  
+                        @endif
                     @endforeach
                     
                 </nav>

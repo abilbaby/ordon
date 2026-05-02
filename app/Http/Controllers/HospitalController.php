@@ -430,6 +430,8 @@ class HospitalController extends Controller
                 $validated['gender'] ?? null,
                 $validated['organ_needed'] ?? null,
                 $validated['urgency_level'] ?? null,
+                $validated['waiting_time'] ?? null,
+                $validated['other_organs_needed'] ?? null,
                 $validated['medical_notes'] ?? null,
                 $validated['contact_number'] ?? null
             )

@@ -25,6 +25,12 @@
                         <option value="{{ $group }}" @selected(($filters['blood_group'] ?? '') === $group)>{{ $group }}</option>
                     @endforeach
                 </select>
+                <select name="hospital_id" class="rounded-xl border-slate-200 text-sm">
+                    <option value="">All hospitals</option>
+                    @foreach ($hospitals ?? [] as $hospital)
+                        <option value="{{ $hospital->id }}" @selected(($filters['hospital_id'] ?? '') === (string) $hospital->id)>{{ $hospital->name }}</option>
+                    @endforeach
+                </select>
                 <select name="fraud" class="rounded-xl border-slate-200 text-sm">
                     <option value="">Fraud: All</option>
                     <option value="yes" @selected(($filters['fraud'] ?? '') === 'yes')>Fraud Flagged</option>

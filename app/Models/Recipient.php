@@ -72,6 +72,11 @@ class Recipient extends Model
         return $this->hasMany(RecipientChangeRequest::class);
     }
 
+    public function updateRequests(): HasMany
+    {
+        return $this->hasMany(RecipientUpdateRequest::class);
+    }
+
     public function hospital(): BelongsTo
     {
         return $this->belongsTo(Hospital::class);
@@ -93,5 +98,68 @@ class Recipient extends Model
         }
 
         return str_repeat('*', max(strlen($this->identity_number) - 4, 0)).substr($this->identity_number, -4);
+    }
+
+    /**
+     * Get fields that are directly editable (no approval required)
+     */
+    public static function getDirectlyEditableFields(): array
+    {
+        return [
+            'phone' => 'Phone Number',
+            'address' => 'Address',
+            'emergency_contact_name' => 'Emergency Contact Name',
+            'emergency_contact_phone' => 'Emergency Contact Phone',
+        ];
+    }
+
+    /**
+     * Get fields that require approval (identity + medical critical)
+     */
+    public static function getApprovalRequiredFields(): array
+    {
+        return [
+            'full_name' => 'Full Name',
+            'date_of_birth' => 'Date of Birth',
+            'gender' => 'Gender',
+            'blood_group' => 'Blood Group',
+            'organ_needed' => 'Organ Needed',
+            'urgency_level' => 'Urgency Level',
+            'waiting_time' => 'Waiting Time (days)',
+            'organs_needed' => 'Other Organs Needed',
+        ];
+    }
+
+    /**
+     * Get current values for approval-required fields
+     */
+    public function getApprovalRequiredValues(): array
+    {
+        return [
+            'full_name' => $this->user?->name,
+            'date_of_birth' => $this->date_of_birth?->format('Y-m-d'),
+            'gender' => $this->gender,
+            'blood_group' => $this->blood_group,
+            'organ_needed' => $this->organ_needed,
+            'urgency_level' => $this->urgency_level,
+            'waiting_time' => $this->waiting_time,
+            'organs_needed' => $this->organs_needed,
+        ];
+    }
+
+    /**
+     * Check if field requires approval
+     */
+    public static function requiresApproval(string $field): bool
+    {
+        return array_key_exists($field, self::getApprovalRequiredFields());
+    }
+
+    /**
+     * Check if field is directly editable
+     */
+    public static function isDirectlyEditable(string $field): bool
+    {
+        return array_key_exists($field, self::getDirectlyEditableFields());
     }
 }

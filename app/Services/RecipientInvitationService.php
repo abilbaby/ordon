@@ -44,6 +44,8 @@ class RecipientInvitationService
             'gender' => $data->gender,
             'organ_needed' => $data->organNeeded,
             'urgency_level' => $data->urgencyLevel,
+            'waiting_time' => $data->waitingTime,
+            'other_organs_needed' => $data->otherOrgansNeeded,
             'medical_notes' => $data->medicalNotes,
             'contact_number' => $data->contactNumber,
         ]);
@@ -132,7 +134,8 @@ class RecipientInvitationService
                 'blood_group' => $invite->blood_group,
                 'organ_needed' => $invite->organ_needed ?? 'Kidney',
                 'urgency_level' => $invite->urgency_level ?? 'medium',
-                'waiting_time' => 0,
+                'waiting_time' => $invite->waiting_time ?? 0,
+                'organs_needed' => $invite->other_organs_needed ? array_map('trim', explode(',', $invite->other_organs_needed)) : null,
                 'status' => 'REGISTERED',
                 'identity_type' => $data->identityType,
                 'identity_number' => $normalizedIdentityNumber,

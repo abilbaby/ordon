@@ -178,6 +178,27 @@ class RecipientController extends Controller
         ]);
     }
 
+    public function updateDirectFields(Request $request): RedirectResponse
+    {
+        $recipient = Recipient::where('user_id', $request->user()->id)->firstOrFail();
+        
+        $validated = $request->validate([
+            'phone' => 'nullable|string|regex:/^[0-9]{10,15}$/',
+            'address' => 'nullable|string|max:500',
+            'emergency_contact_name' => 'nullable|string|max:255',
+            'emergency_contact_phone' => 'nullable|string|regex:/^[0-9]{10,15}$/',
+        ]);
+
+        $recipient->update([
+            'phone' => $validated['phone'] ?? $recipient->phone,
+            'address' => $validated['address'] ?? $recipient->address,
+            'emergency_contact_name' => $validated['emergency_contact_name'] ?? $recipient->emergency_contact_name,
+            'emergency_contact_phone' => $validated['emergency_contact_phone'] ?? $recipient->emergency_contact_phone,
+        ]);
+        
+        return back()->with('success', 'Direct fields updated successfully.');
+    }
+
     public function updateProfile(UpdateRecipientProfileRequest $request): RedirectResponse
     {
         $recipient = Recipient::where('user_id', $request->user()->id)->firstOrFail();

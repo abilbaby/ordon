@@ -10,6 +10,7 @@ class Transplant extends Model
     protected $fillable = [
         'match_id',
         'hospital_id',
+        'doctor_id',
         'status',
         'scheduled_at',
         'slot_date',
@@ -39,5 +40,10 @@ class Transplant extends Model
     public function hospital(): BelongsTo
     {
         return $this->belongsTo(Hospital::class);
+    }
+
+    public function doctor(): BelongsTo
+    {
+        return $this->belongsTo(Doctor::class);
     }
 }

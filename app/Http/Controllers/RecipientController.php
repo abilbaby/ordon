@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UpdateRecipientProfileRequest;
 use App\Models\AllocationMatch;
 use App\Models\EmergencyRequest;
 use App\Models\IssueReport;
@@ -81,11 +82,6 @@ class RecipientController extends Controller
         ]);
     }
 
-    public function updateProfile(Request $request): RedirectResponse
-    {
-        return back()->with('error', 'Recipient medical/request details are managed by the hospital module.');
-    }
-
     public function requests(Request $request): View
     {
         $recipient = Recipient::where('user_id', $request->user()->id)->firstOrFail();
@@ -119,12 +115,19 @@ class RecipientController extends Controller
             return back()->with('error', 'No hospital is assigned to review this request.');
         }
 
+        $request->merge([
+            'organ_needed' => $request->filled('organ_needed') ? trim((string) $request->input('organ_needed')) : null,
+            'region' => $request->filled('region') ? trim((string) $request->input('region')) : null,
+            'organs_needed' => $request->filled('organs_needed') ? trim((string) $request->input('organs_needed')) : null,
+            'reason' => $request->filled('reason') ? trim((string) $request->input('reason')) : null,
+        ]);
+
         $validated = $request->validate([
             'blood_group' => ['required', Rule::in(['O-', 'O+', 'A-', 'A+', 'B-', 'B+', 'AB-', 'AB+'])],
             'organ_needed' => ['required', 'string', 'max:255'],
             'urgency_level' => ['required', Rule::in(['high', 'medium', 'low'])],
             'waiting_time' => ['required', 'integer', 'min:0', 'max:3650'],
-            'region' => ['nullable', 'string', 'max:255'],
+            'region' => ['nullable', 'string', 'min:2', 'max:100'],
             'organs_needed' => ['nullable', 'string', 'max:255'],
             'reason' => ['required', 'string', 'max:1000'],
         ]);
@@ -163,6 +166,39 @@ class RecipientController extends Controller
                 ->latest()
                 ->paginate(10),
         ]);
+    }
+
+    public function editProfile(Request $request): View
+    {
+        $recipient = Recipient::where('user_id', $request->user()->id)->firstOrFail();
+        
+        return view('recipient.profile-edit', [
+            'recipient' => $recipient,
+            'user' => $request->user(),
+        ]);
+    }
+
+    public function updateProfile(UpdateRecipientProfileRequest $request): RedirectResponse
+    {
+        $recipient = Recipient::where('user_id', $request->user()->id)->firstOrFail();
+        
+        $validated = $request->validated();
+
+        if (! empty($validated['full_name'])) {
+            $request->user()->update(['name' => $validated['full_name']]);
+        }
+
+        $recipient->update([
+            'phone' => $validated['phone'] ?? null,
+            'address' => $validated['address'] ?? null,
+            'date_of_birth' => $validated['date_of_birth'] ?? null,
+            'gender' => $validated['gender'] ?? null,
+            'blood_group' => $validated['blood_group'] ?? $recipient->blood_group,
+            'emergency_contact_name' => $validated['emergency_contact_name'] ?? null,
+            'emergency_contact_phone' => $validated['emergency_contact_phone'] ?? null,
+        ]);
+        
+        return back()->with('success', 'Profile updated successfully.');
     }
 
     public function requestEscalation(Request $request): RedirectResponse

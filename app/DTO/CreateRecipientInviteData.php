@@ -10,6 +10,12 @@ final class CreateRecipientInviteData
         public readonly string $phone,
         public readonly string $bloodGroup,
         public readonly ?string $notes,
+        public readonly ?string $dateOfBirth = null,
+        public readonly ?string $gender = null,
+        public readonly ?string $organNeeded = null,
+        public readonly ?string $urgencyLevel = null,
+        public readonly ?string $medicalNotes = null,
+        public readonly ?string $contactNumber = null,
     ) {
     }
 }

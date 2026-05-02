@@ -26,7 +26,7 @@ class RegistrationTest extends TestCase
             'email' => 'test@example.com',
             'role' => 'donor',
             'identity_type' => 'aadhaar',
-            'identity_number' => 'NID-1234567',
+            'identity_number' => '123456789012',
             'password' => 'password',
             'password_confirmation' => 'password',
         ]);
@@ -56,7 +56,7 @@ class RegistrationTest extends TestCase
             'email' => 'hospital@example.com',
             'role' => 'hospital',
             'hospital_name' => 'Kerala Care Hospital',
-            'hospital_registration_id' => 'KL-HOSP-1001',
+            'hospital_registration_id' => 'KLHOSP1001',
             'hospital_location' => 'Kochi, Kerala',
             'password' => 'password',
             'password_confirmation' => 'password',
@@ -68,7 +68,7 @@ class RegistrationTest extends TestCase
             'name' => 'Kerala Care Hospital',
             'location' => 'Kochi, Kerala',
             'identity_type' => 'hospital_registration_id',
-            'identity_number' => 'KL-HOSP-1001',
+            'identity_number' => 'KLHOSP1001',
         ]);
     }
 

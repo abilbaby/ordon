@@ -37,29 +37,33 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request, RecipientInvitationService $recipientInvitationService): RedirectResponse
     {
-        if ($request->input('role') === 'recipient') {
-            $request->merge([
-                'identity_type' => $request->filled('identity_type') ? strtolower((string) $request->input('identity_type')) : null,
-                'identity_number' => $request->filled('identity_number')
-                    ? strtoupper((string) preg_replace('/[^A-Za-z0-9]/', '', trim((string) $request->input('identity_number'))))
-                    : null,
-                'rvid' => $request->filled('rvid') ? strtoupper(trim((string) $request->input('rvid'))) : null,
-            ]);
-        }
+        $request->merge([
+            'name' => $request->filled('name') ? trim((string) $request->input('name')) : null,
+            'identity_type' => $request->filled('identity_type') ? strtolower((string) $request->input('identity_type')) : null,
+            'identity_number' => $request->filled('identity_number')
+                ? strtoupper((string) preg_replace('/[^A-Za-z0-9]/', '', trim((string) $request->input('identity_number'))))
+                : null,
+            'rvid' => $request->filled('rvid') ? strtoupper(trim((string) $request->input('rvid'))) : null,
+            'hospital_name' => $request->filled('hospital_name') ? trim((string) $request->input('hospital_name')) : null,
+            'hospital_registration_id' => $request->filled('hospital_registration_id')
+                ? strtoupper((string) preg_replace('/[^A-Za-z0-9]/', '', trim((string) $request->input('hospital_registration_id'))))
+                : null,
+            'hospital_location' => $request->filled('hospital_location') ? trim((string) $request->input('hospital_location')) : null,
+        ]);
 
         $validated = $request->validate([
-            'name' => ['required_unless:role,recipient', 'nullable', 'string', 'max:255'],
+            'name' => ['required_unless:role,recipient', 'nullable', 'string', 'min:2', 'max:100', 'regex:/^[a-zA-Z\s]+$/'],
             'email' => ['required_unless:role,recipient', 'nullable', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'role' => ['required', 'in:donor,recipient,hospital'],
-            'rvid' => ['required_if:role,recipient', 'nullable', 'string'],
+            'rvid' => ['required_if:role,recipient', 'nullable', 'string', 'max:60'],
             'identity_type' => ['required_if:role,donor,recipient', 'nullable', 'in:aadhaar,passport,voter_id,driving_licence,pan,other'],
             'identity_number' => [
                 'required_if:role,donor,recipient',
                 'nullable',
                 'string',
-                'max:60',
+                'max:20',
                 function (string $attribute, mixed $value, \Closure $fail) use ($request): void {
-                    if ($request->input('role') !== 'recipient' || ! $value) {
+                    if (! in_array($request->input('role'), ['donor', 'recipient'], true) || ! $value) {
                         return;
                     }
 
@@ -82,9 +86,9 @@ class RegisteredUserController extends Controller
                     };
                 },
             ],
-            'hospital_name' => ['required_if:role,hospital', 'nullable', 'string', 'max:255'],
-            'hospital_registration_id' => ['required_if:role,hospital', 'nullable', 'string', 'max:60'],
-            'hospital_location' => ['required_if:role,hospital', 'nullable', 'string', 'max:255'],
+            'hospital_name' => ['required_if:role,hospital', 'nullable', 'string', 'min:2', 'max:100', 'regex:/^[a-zA-Z\s]+$/'],
+            'hospital_registration_id' => ['required_if:role,hospital', 'nullable', 'string', 'min:5', 'max:20', 'regex:/^[A-Z0-9]+$/'],
+            'hospital_location' => ['required_if:role,hospital', 'nullable', 'string', 'min:5', 'max:255'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 

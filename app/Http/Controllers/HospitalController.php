@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\AssignTransplantSlotRequest;
+use App\Http\Requests\HospitalCreateInviteRequest;
+use App\Http\Requests\StoreDoctorRequest;
+use App\Http\Requests\UpdateDoctorRequest;
 use App\Enums\OrganType;
 use App\Models\AllocationMatch;
 use App\Models\Doctor;
@@ -268,57 +272,103 @@ class HospitalController extends Controller
         if (! $this->isHospitalApproved($hospital)) {
             abort(403, 'Feature locked until admin approval.');
         }
-        $upcoming = Transplant::with(['match.donor.user', 'match.recipient.user'])
+        $upcoming = Transplant::with(['match.donor.user', 'match.recipient.user', 'doctor'])
             ->where('hospital_id', $hospital->id)
             ->whereIn('status', ['APPROVED', 'COMPLETED'])
             ->latest()
             ->paginate(12);
 
-        return view('hospital.planner', ['upcoming' => $upcoming]);
+        return view('hospital.planner', [
+            'upcoming' => $upcoming,
+            'hospital' => $hospital->load('doctors'),
+        ]);
     }
 
-    public function assignSlot(Request $request, Transplant $transplant): RedirectResponse
+    public function assignSlot(AssignTransplantSlotRequest $request, Transplant $transplant): RedirectResponse
     {
         $hospital = Hospital::where('user_id', $request->user()->id)->firstOrFail();
         if (! $this->isHospitalApproved($hospital)) {
             return back()->with('error', 'Your hospital account is pending admin verification and approval.');
         }
-        $request->validate([
-            'slot_date' => ['required', 'date'],
-            'slot_period' => ['required', 'in:Morning,Afternoon,Evening'],
-            'operating_room' => ['required', 'string', 'max:100'],
-            'surgeon_name' => ['required', 'string', 'max:255'],
-        ]);
         if ($transplant->hospital_id !== $hospital->id) {
             return back()->with('error', 'You are not authorized for this transplant.');
         }
 
+        $validated = $request->validated();
+        $doctor = Doctor::where('id', $validated['doctor_id'])
+            ->where('hospital_id', $hospital->id)
+            ->firstOrFail();
+
         $transplant->update([
-            'slot_date' => $request->string('slot_date')->toString(),
-            'slot_period' => $request->string('slot_period')->toString(),
-            'operating_room' => $request->string('operating_room')->toString(),
-            'surgeon_name' => $request->string('surgeon_name')->toString(),
+            'slot_date' => $validated['slot_date'],
+            'slot_period' => $validated['slot_period'],
+            'operating_room' => $validated['operating_room'],
+            'doctor_id' => $doctor->id,
+            'surgeon_name' => $doctor->name,
             'scheduled_at' => now(),
         ]);
 
         return back()->with('success', 'Hospital slot assigned successfully.');
     }
 
-    public function addDoctor(Request $request, AuditLogger $auditLogger): RedirectResponse
+    public function addDoctor(StoreDoctorRequest $request, AuditLogger $auditLogger): RedirectResponse
     {
         $hospital = Hospital::where('user_id', $request->user()->id)->firstOrFail();
         if (! $this->isHospitalApproved($hospital)) {
             return back()->with('error', 'Your hospital account is pending admin verification and approval.');
         }
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'specialization' => ['required', 'string', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:50'],
-        ]);
+        $validated = $request->validated();
         Doctor::create([...$validated, 'hospital_id' => $hospital->id]);
         $auditLogger->log($request->user(), 'hospital', 'add_doctor', $validated['name']);
 
         return back()->with('success', 'Doctor added successfully.');
+    }
+
+    public function editDoctor(Request $request, Doctor $doctor): View
+    {
+        $hospital = Hospital::where('user_id', $request->user()->id)->firstOrFail();
+        if (! $this->isHospitalApproved($hospital)) {
+            abort(403, 'Feature locked until admin approval.');
+        }
+        if ($doctor->hospital_id !== $hospital->id) {
+            abort(403, 'You can only edit doctors from your hospital.');
+        }
+
+        return view('hospital.doctors.edit', ['doctor' => $doctor, 'hospital' => $hospital]);
+    }
+
+    public function updateDoctor(UpdateDoctorRequest $request, Doctor $doctor, AuditLogger $auditLogger): RedirectResponse
+    {
+        $hospital = Hospital::where('user_id', $request->user()->id)->firstOrFail();
+        if (! $this->isHospitalApproved($hospital)) {
+            return back()->with('error', 'Your hospital account is pending admin verification and approval.');
+        }
+        if ($doctor->hospital_id !== $hospital->id) {
+            return back()->with('error', 'You can only edit doctors from your hospital.');
+        }
+
+        $validated = $request->validated();
+        $doctor->update($validated);
+        $auditLogger->log($request->user(), 'hospital', 'update_doctor', "Doctor {$doctor->id} updated");
+
+        return back()->with('success', 'Doctor updated successfully.');
+    }
+
+    public function deleteDoctor(Request $request, Doctor $doctor, AuditLogger $auditLogger): RedirectResponse
+    {
+        $hospital = Hospital::where('user_id', $request->user()->id)->firstOrFail();
+        if (! $this->isHospitalApproved($hospital)) {
+            return back()->with('error', 'Your hospital account is pending admin verification and approval.');
+        }
+        if ($doctor->hospital_id !== $hospital->id) {
+            return back()->with('error', 'You can only delete doctors from your hospital.');
+        }
+
+        $doctorName = $doctor->name;
+        $doctor->delete();
+        $auditLogger->log($request->user(), 'hospital', 'delete_doctor', "Doctor {$doctorName} deleted");
+
+        return back()->with('success', 'Doctor deleted successfully.');
     }
 
     public function addInventory(Request $request, AuditLogger $auditLogger): RedirectResponse
@@ -357,7 +407,7 @@ class HospitalController extends Controller
     }
 
     public function createRecipientInvite(
-        Request $request,
+        HospitalCreateInviteRequest $request,
         RecipientInvitationService $recipientInvitationService,
         AuditLogger $auditLogger,
         NotificationService $notificationService
@@ -366,13 +416,7 @@ class HospitalController extends Controller
         if (! $this->isHospitalApproved($hospital)) {
             return back()->with('error', 'Your hospital account is pending admin verification and approval.');
         }
-        $validated = $request->validate([
-            'recipient_name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255'],
-            'phone' => ['required', 'string', 'max:50'],
-            'blood_group' => ['required', 'in:O-,O+,A-,A+,B-,B+,AB-,AB+'],
-            'notes' => ['nullable', 'string', 'max:1000'],
-        ]);
+        $validated = $request->validated();
 
         $invite = $recipientInvitationService->createRecipientInvite(
             $hospital,
@@ -381,7 +425,13 @@ class HospitalController extends Controller
                 $validated['email'],
                 $validated['phone'],
                 $validated['blood_group'],
-                $validated['notes'] ?? null
+                $validated['notes'] ?? null,
+                $validated['date_of_birth'] ?? null,
+                $validated['gender'] ?? null,
+                $validated['organ_needed'] ?? null,
+                $validated['urgency_level'] ?? null,
+                $validated['medical_notes'] ?? null,
+                $validated['contact_number'] ?? null
             )
         );
 
@@ -566,8 +616,14 @@ class HospitalController extends Controller
         if ($transplant->hospital_id !== $hospital->id) {
             return back()->with('error', 'You are not authorized for this transplant.');
         }
+        $request->merge([
+            'recipient_name_override' => $request->filled('recipient_name_override')
+                ? trim((string) $request->input('recipient_name_override'))
+                : null,
+        ]);
+
         $validated = $request->validate([
-            'recipient_name_override' => ['nullable', 'string', 'max:255'],
+            'recipient_name_override' => ['nullable', 'string', 'min:2', 'max:100', 'regex:/^[a-zA-Z\s]+$/'],
         ]);
 
         $transplant->update(['recipient_name_override' => $validated['recipient_name_override']]);

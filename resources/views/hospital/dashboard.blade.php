@@ -69,19 +69,84 @@
 
     <div class="card-pro mb-6">
         <h3 class="text-lg font-semibold mb-3">Create Recipient Invitation</h3>
-        <form method="POST" action="{{ route('hospital.recipient-invites.create') }}" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <form method="POST" action="{{ route('hospital.recipient-invites.create') }}" class="grid grid-cols-1 md:grid-cols-2 gap-4">
             @csrf
-            <input name="recipient_name" class="rounded-xl border-slate-200" placeholder="Recipient Name" required>
-            <input type="email" name="email" class="rounded-xl border-slate-200" placeholder="Email" required>
-            <input name="phone" class="rounded-xl border-slate-200" placeholder="Phone" required>
-            <select name="blood_group" class="rounded-xl border-slate-200" required>
-                <option value="">Blood Group</option>
-                @foreach (['O-','O+','A-','A+','B-','B+','AB-','AB+'] as $group)
-                    <option value="{{ $group }}">{{ $group }}</option>
-                @endforeach
-            </select>
-            <textarea name="notes" class="rounded-xl border-slate-200 md:col-span-2" placeholder="Optional notes"></textarea>
-            <button class="md:col-span-2 rounded-xl bg-slate-900 text-white px-4 py-2.5">Generate Link + Send Email</button>
+            <div>
+                <label class="text-sm text-slate-600">Recipient Full Name</label>
+                <input name="recipient_name" value="{{ old('recipient_name') }}" class="mt-1 form-control @error('recipient_name') form-control-invalid @enderror" minlength="2" maxlength="100" pattern="[A-Za-z ]+" required>
+                @error('recipient_name') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+            </div>
+            <div>
+                <label class="text-sm text-slate-600">Email</label>
+                <input type="email" name="email" value="{{ old('email') }}" class="mt-1 form-control @error('email') form-control-invalid @enderror" maxlength="255" required>
+                @error('email') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+            </div>
+            <div>
+                <label class="text-sm text-slate-600">Contact Number</label>
+                <input type="tel" name="phone" value="{{ old('phone') }}" class="mt-1 form-control @error('phone') form-control-invalid @enderror" maxlength="15" pattern="[0-9]{10,15}" inputmode="numeric" placeholder="10-15 digits" required>
+                @error('phone') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+            </div>
+            <div>
+                <label class="text-sm text-slate-600">Date of Birth</label>
+                <input type="date" name="date_of_birth" value="{{ old('date_of_birth') }}" class="mt-1 form-control @error('date_of_birth') form-control-invalid @enderror" max="{{ now()->subDay()->format('Y-m-d') }}" required>
+                @error('date_of_birth') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+            </div>
+            <div>
+                <label class="text-sm text-slate-600">Gender</label>
+                <select name="gender" class="mt-1 form-control @error('gender') form-control-invalid @enderror" required>
+                    <option value="">Select Gender</option>
+                    <option value="male" @selected(old('gender') === 'male')>Male</option>
+                    <option value="female" @selected(old('gender') === 'female')>Female</option>
+                    <option value="other" @selected(old('gender') === 'other')>Other</option>
+                </select>
+                @error('gender') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+            </div>
+            <div>
+                <label class="text-sm text-slate-600">Blood Group</label>
+                <select name="blood_group" class="mt-1 form-control @error('blood_group') form-control-invalid @enderror" required>
+                    <option value="">Select Blood Group</option>
+                    @foreach (['O-','O+','A-','A+','B-','B+','AB-','AB+'] as $group)
+                        <option value="{{ $group }}" @selected(old('blood_group') === $group)>{{ $group }}</option>
+                    @endforeach
+                </select>
+                @error('blood_group') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+            </div>
+            <div>
+                <label class="text-sm text-slate-600">Organ Needed</label>
+                <select name="organ_needed" class="mt-1 form-control @error('organ_needed') form-control-invalid @enderror" required>
+                    <option value="">Select Organ</option>
+                    @foreach (['Kidney','Liver','Heart','Lung','Pancreas','Intestine','Cornea'] as $organ)
+                        <option value="{{ $organ }}" @selected(old('organ_needed') === $organ)>{{ $organ }}</option>
+                    @endforeach
+                </select>
+                @error('organ_needed') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+            </div>
+            <div>
+                <label class="text-sm text-slate-600">Urgency Level</label>
+                <select name="urgency_level" class="mt-1 form-control @error('urgency_level') form-control-invalid @enderror" required>
+                    <option value="">Select Urgency</option>
+                    <option value="high" @selected(old('urgency_level') === 'high')>High</option>
+                    <option value="medium" @selected(old('urgency_level') === 'medium')>Medium</option>
+                    <option value="low" @selected(old('urgency_level') === 'low')>Low</option>
+                </select>
+                @error('urgency_level') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+            </div>
+            <div>
+                <label class="text-sm text-slate-600">Emergency Contact Number</label>
+                <input type="tel" name="contact_number" value="{{ old('contact_number') }}" class="mt-1 form-control @error('contact_number') form-control-invalid @enderror" maxlength="15" pattern="[0-9]{10,15}" inputmode="numeric" placeholder="Optional">
+                @error('contact_number') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+            </div>
+            <div class="md:col-span-2">
+                <label class="text-sm text-slate-600">Medical Notes</label>
+                <textarea name="medical_notes" class="mt-1 form-control @error('medical_notes') form-control-invalid @enderror" maxlength="1000" rows="3" placeholder="Optional clinical context">{{ old('medical_notes') }}</textarea>
+                @error('medical_notes') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+            </div>
+            <div class="md:col-span-2">
+                <label class="text-sm text-slate-600">Internal Notes</label>
+                <textarea name="notes" class="mt-1 form-control @error('notes') form-control-invalid @enderror" maxlength="1000" rows="2" placeholder="Optional hospital note">{{ old('notes') }}</textarea>
+                @error('notes') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+            </div>
+            <button class="md:col-span-2 rounded-xl bg-slate-900 text-white px-4 py-2.5 font-semibold">Generate Link + Send Email</button>
         </form>
     </div>
 
@@ -144,13 +209,35 @@
             <h3 class="text-lg font-semibold mb-3">Doctor Management</h3>
             <form method="POST" action="{{ route('hospital.doctors.add') }}" class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4">
                 @csrf
-                <input name="name" class="rounded-xl border-slate-200" placeholder="Doctor name" required>
-                <input name="specialization" class="rounded-xl border-slate-200" placeholder="Specialization" required>
-                <input name="phone" class="rounded-xl border-slate-200" placeholder="Phone">
+                <div>
+                    <input name="name" class="form-control @error('name') form-control-invalid @enderror" placeholder="Doctor name" minlength="2" maxlength="100" pattern="[A-Za-z ]+" required>
+                    @error('name') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <input name="specialization" class="form-control @error('specialization') form-control-invalid @enderror" placeholder="Specialization" minlength="2" maxlength="100" required>
+                    @error('specialization') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <input type="tel" name="phone" class="form-control @error('phone') form-control-invalid @enderror" placeholder="Phone" maxlength="15" pattern="[0-9]{10,15}" inputmode="numeric">
+                    @error('phone') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+                </div>
                 <button class="md:col-span-3 rounded-xl bg-slate-900 text-white py-2">Add Doctor</button>
             </form>
             @foreach ($doctors as $doctor)
-                <div class="rounded-xl border border-[#d7e8f4] p-2 text-sm mb-2">{{ $doctor->name }} - {{ $doctor->specialization }}</div>
+                <div class="rounded-xl border border-[#d7e8f4] p-3 text-sm mb-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <p class="font-medium">{{ $doctor->name }} - {{ $doctor->specialization }}</p>
+                        <p class="text-xs text-slate-500">{{ $doctor->phone ?? 'No phone added' }}</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <a href="{{ route('hospital.doctors.edit', $doctor) }}" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50">Edit</a>
+                        <form method="POST" action="{{ route('hospital.doctors.delete', $doctor) }}" onsubmit="return confirm('Delete this doctor? This cannot be undone.');">
+                            @csrf
+                            @method('DELETE')
+                            <button class="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-700">Delete</button>
+                        </form>
+                    </div>
+                </div>
             @endforeach
         </div>
         <div class="card-pro">

@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\AllocationMatch;
+use App\Enums\OrganType;
 use App\Models\Donor;
 use App\Models\DonationHistory;
+use App\Models\Doctor;
 use App\Models\Hospital;
 use App\Models\IssueReport;
+use App\Models\OrganInventory;
 use App\Models\Recipient;
 use App\Models\SystemSetting;
 use App\Models\Transplant;
@@ -302,6 +305,47 @@ class AdminController extends Controller
         return view('admin.hospitals', [
             'hospitals' => $query->paginate(10)->withQueryString(),
             'filters' => ['search' => $search, 'approved' => $approved, 'fraud' => $fraud, 'blacklisted' => $blacklisted],
+        ]);
+    }
+
+    public function doctors(): View
+    {
+        $hospitalId = request()->string('hospital_id')->toString();
+        $specialization = request()->string('specialization')->toString();
+
+        $query = Doctor::with('hospital')->latest();
+        if ($hospitalId !== '') {
+            $query->where('hospital_id', (int) $hospitalId);
+        }
+        if ($specialization !== '') {
+            $query->where('specialization', 'like', "%{$specialization}%");
+        }
+
+        return view('admin.doctors', [
+            'doctors' => $query->paginate(12)->withQueryString(),
+            'hospitals' => Hospital::orderBy('name')->get(['id', 'name']),
+            'filters' => ['hospital_id' => $hospitalId, 'specialization' => $specialization],
+        ]);
+    }
+
+    public function organs(): View
+    {
+        $hospitalId = request()->string('hospital_id')->toString();
+        $organType = request()->string('organ_type')->toString();
+
+        $query = OrganInventory::with('hospital')->latest();
+        if ($hospitalId !== '') {
+            $query->where('hospital_id', (int) $hospitalId);
+        }
+        if ($organType !== '') {
+            $query->where('organ_type', $organType);
+        }
+
+        return view('admin.organs', [
+            'inventory' => $query->paginate(12)->withQueryString(),
+            'hospitals' => Hospital::orderBy('name')->get(['id', 'name']),
+            'organTypes' => OrganType::values(),
+            'filters' => ['hospital_id' => $hospitalId, 'organ_type' => $organType],
         ]);
     }
 
@@ -723,8 +767,14 @@ class AdminController extends Controller
 
     public function setCertificateRecipientName(Request $request, Transplant $transplant): RedirectResponse
     {
+        $request->merge([
+            'recipient_name_override' => $request->filled('recipient_name_override')
+                ? trim((string) $request->input('recipient_name_override'))
+                : null,
+        ]);
+
         $validated = $request->validate([
-            'recipient_name_override' => ['nullable', 'string', 'max:255'],
+            'recipient_name_override' => ['nullable', 'string', 'min:2', 'max:100', 'regex:/^[a-zA-Z\s]+$/'],
         ]);
         $transplant->update(['recipient_name_override' => $validated['recipient_name_override']]);
 

@@ -59,7 +59,7 @@
                                 </form>
                                 <form method="POST" action="{{ route('hospital.transplants.certificate-recipient', $transplant) }}" class="mb-2">
                                     @csrf
-                                    <input name="recipient_name_override" value="{{ $transplant->recipient_name_override }}" class="rounded-lg border-slate-200 text-xs w-40" placeholder="Certificate recipient name">
+                                    <input name="recipient_name_override" value="{{ $transplant->recipient_name_override }}" class="rounded-lg border-slate-200 text-xs w-40" placeholder="Certificate recipient name" minlength="2" maxlength="100" pattern="[A-Za-z ]+">
                                     <button class="rounded-lg bg-amber-700 text-white px-2 py-1 text-xs">Set Cert Name</button>
                                 </form>
                                 @if ($transplant->status !== 'COMPLETED')

@@ -54,6 +54,8 @@ Route::middleware(['auth', 'no-cache', 'role:admin'])->prefix('admin')->name('ad
     Route::get('/flagged-recipients', [AdminController::class, 'flaggedRecipients'])->name('flagged-recipients');
     Route::get('/matches', [AdminController::class, 'matches'])->name('matches');
     Route::get('/hospitals', [AdminController::class, 'hospitals'])->name('hospitals');
+    Route::get('/doctors', [AdminController::class, 'doctors'])->name('doctors');
+    Route::get('/organs', [AdminController::class, 'organs'])->name('organs');
     Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
     Route::get('/notifications', [AdminController::class, 'notifications'])->name('notifications');
     Route::get('/donation-logs', [AdminController::class, 'donationLogs'])->name('donation-logs');
@@ -97,6 +99,8 @@ Route::middleware(['auth', 'no-cache', 'role:recipient'])->prefix('recipient')->
     Route::get('/requests', [RecipientController::class, 'requests'])->name('requests');
     Route::get('/edit-profile', [RecipientController::class, 'editProfileRequest'])->name('edit-profile');
     Route::post('/edit-profile', [RecipientController::class, 'submitProfileChangeRequest'])->name('edit-profile.submit');
+    Route::get('/profile', [RecipientController::class, 'editProfile'])->name('profile');
+    Route::patch('/profile', [RecipientController::class, 'updateProfile'])->name('profile.update');
     Route::get('/matches', [RecipientController::class, 'matches'])->name('matches');
     Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
 });
@@ -108,6 +112,9 @@ Route::middleware(['auth', 'no-cache', 'role:hospital'])->prefix('hospital')->na
     Route::get('/transplants', [HospitalController::class, 'transplants'])->name('transplants');
     Route::get('/planner', [HospitalController::class, 'planner'])->name('planner');
     Route::post('/transplants/{transplant}/slot', [HospitalController::class, 'assignSlot'])->name('transplants.slot');
+    Route::get('/doctors/{doctor}/edit', [HospitalController::class, 'editDoctor'])->name('doctors.edit');
+    Route::patch('/doctors/{doctor}', [HospitalController::class, 'updateDoctor'])->name('doctors.update');
+    Route::delete('/doctors/{doctor}', [HospitalController::class, 'deleteDoctor'])->name('doctors.delete');
     Route::post('/transplants/{transplant}/surgery-workflow', [HospitalController::class, 'updateSurgeryWorkflow'])->name('transplants.surgery-workflow');
     Route::post('/transplants/{transplant}/transport', [HospitalController::class, 'updateTransport'])->name('transplants.transport');
     Route::post('/transplants/{transplant}/post-op-report', [HospitalController::class, 'addPostOperationReport'])->name('transplants.post-op-report');

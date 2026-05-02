@@ -17,6 +17,8 @@
                 ['label' => 'Flagged Recipients', 'route' => 'admin.flagged-recipients', 'active' => 'admin.flagged-recipients'],
                 ['label' => 'Matches', 'route' => 'admin.matches', 'active' => 'admin.matches'],
                 ['label' => 'Hospitals', 'route' => 'admin.hospitals', 'active' => 'admin.hospitals'],
+                ['label' => 'Doctors', 'route' => 'admin.doctors', 'active' => 'admin.doctors'],
+                ['label' => 'Organs', 'route' => 'admin.organs', 'active' => 'admin.organs'],
                 ['label' => 'Reports', 'route' => 'admin.reports', 'active' => 'admin.reports'],
                 ['label' => 'Donation Logs', 'route' => 'admin.donation-logs', 'active' => 'admin.donation-logs'],
                 ['label' => 'Notifications', 'route' => 'notifications.index', 'active' => 'notifications.*'],
@@ -30,6 +32,7 @@
             ],
             'recipient' => [
                 ['label' => 'Dashboard', 'route' => 'recipient.dashboard', 'active' => 'recipient.dashboard'],
+                ['label' => 'Profile', 'route' => 'recipient.profile', 'active' => 'recipient.profile*'],
                 ['label' => 'My Request', 'route' => 'recipient.requests', 'active' => 'recipient.requests'],
                 ['label' => 'Match Status', 'route' => 'recipient.matches', 'active' => 'recipient.matches'],
                 ['label' => 'Edit Profile', 'route' => 'recipient.edit-profile', 'active' => 'recipient.edit-profile'],

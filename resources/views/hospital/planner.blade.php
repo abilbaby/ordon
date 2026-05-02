@@ -2,7 +2,7 @@
     <x-slot name="title">Hospital Slot Planner</x-slot>
 
     <div class="card-pro">
-        <h3 class="text-lg font-semibold mb-4">Calendar / Slot Planning (Lightweight)</h3>
+        <h3 class="text-lg font-semibold mb-4">Calendar / Slot Planning</h3>
         <p class="text-sm text-slate-600 mb-6">
             Assign operation slots to approved transplants by selecting date, period, operating room, and surgeon.
         </p>
@@ -20,35 +20,58 @@
                 </thead>
                 <tbody>
                     @forelse ($upcoming as $transplant)
-                        <tr class="hover:bg-slate-50 transition-all duration-200 align-top">
+                        <tr class="hover:bg-slate-50 transition-all duration-200 align-top border-b">
                             <td class="p-3">{{ $transplant->match->donor->user->name ?? 'Donor' }}</td>
                             <td class="p-3">{{ $transplant->match->recipient->user->name ?? 'Recipient' }}</td>
-                            <td class="p-3">{{ $transplant->status }}</td>
+                            <td class="p-3">
+                                <span class="rounded-full px-2.5 py-1 text-xs font-medium {{ $transplant->status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700' }}">
+                                    {{ $transplant->status }}
+                                </span>
+                            </td>
                             <td class="p-3 text-xs text-slate-600">
-                                {{ $transplant->slot_date?->format('Y-m-d') ?? 'Not assigned' }}
-                                @if ($transplant->slot_period)
-                                    ({{ $transplant->slot_period }})<br>
-                                    Room: {{ $transplant->operating_room }}<br>
-                                    Surgeon: {{ $transplant->surgeon_name }}
+                                @if ($transplant->slot_date)
+                                    <p><strong>{{ $transplant->slot_date->format('Y-m-d') }}</strong> ({{ $transplant->slot_period }})</p>
+                                    <p>Room: {{ $transplant->operating_room }}</p>
+                                    <p>Surgeon: {{ $transplant->doctor?->name ?? $transplant->surgeon_name }}</p>
+                                @else
+                                    <p class="text-slate-400">Not assigned</p>
                                 @endif
                             </td>
                             <td class="p-3">
                                 <form method="POST" action="{{ route('hospital.transplants.slot', $transplant) }}" class="grid grid-cols-2 gap-2">
                                     @csrf
-                                    <input type="date" name="slot_date" class="rounded-xl border-[#c8dfef]" required>
-                                    <select name="slot_period" class="rounded-xl border-[#c8dfef]" required>
+                                    @method('POST')
+                                    
+                                    <input type="date" name="slot_date" class="rounded-lg border border-slate-300 p-2 text-sm col-span-2" required>
+                                    
+                                    <select name="slot_period" class="rounded-lg border border-slate-300 p-2 text-sm" required>
+                                        <option value="">Select Period</option>
                                         <option value="Morning">Morning</option>
                                         <option value="Afternoon">Afternoon</option>
                                         <option value="Evening">Evening</option>
                                     </select>
-                                    <input name="operating_room" class="rounded-xl border-[#c8dfef] col-span-2" placeholder="Operating Room (e.g. OR-2)" required>
-                                    <input name="surgeon_name" class="rounded-xl border-[#c8dfef] col-span-2" placeholder="Lead Surgeon Name" required>
-                                    <button class="rounded-xl bg-[#0b6ea2] text-white px-3 py-2 text-sm col-span-2 hover:bg-[#0a5f8b]">Save Slot</button>
+                                    
+                                    <input type="text" name="operating_room" class="rounded-lg border border-slate-300 p-2 text-sm" placeholder="Room (e.g. OR-2)" maxlength="100" required>
+                                    
+                                    <select name="doctor_id" class="rounded-lg border border-slate-300 p-2 text-sm col-span-2" required>
+                                        <option value="">Select Surgeon</option>
+                                        @foreach ($hospital->doctors as $doctor)
+                                            <option value="{{ $doctor->id }}">
+                                                {{ $doctor->name }} ({{ $doctor->specialization }})
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    
+                                    <button type="submit" class="rounded-lg bg-blue-600 text-white px-3 py-2 text-sm col-span-2 hover:bg-blue-700 font-medium">
+                                        Save Slot
+                                    </button>
                                 </form>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="p-3">No approved transplants available for planning.</td></tr>
+                        <tr>
+                            <td colspan="5" class="p-3 text-center text-slate-500">No approved transplants available for planning.</td>
+                        </tr>
                     @endforelse
                 </tbody>
             </table>

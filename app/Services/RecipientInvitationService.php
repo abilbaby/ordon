@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class RecipientInvitationService
 {
@@ -39,9 +40,24 @@ class RecipientInvitationService
             'registration_link' => $link,
             'status' => 'Pending',
             'expires_at' => $expiresAt,
+            'date_of_birth' => $data->dateOfBirth,
+            'gender' => $data->gender,
+            'organ_needed' => $data->organNeeded,
+            'urgency_level' => $data->urgencyLevel,
+            'medical_notes' => $data->medicalNotes,
+            'contact_number' => $data->contactNumber,
         ]);
 
-        Mail::to($data->email)->queue(new RecipientInvitationMail($invite, $hospital->name));
+        $mail = new RecipientInvitationMail($invite, $hospital->name);
+        try {
+            if (config('queue.default') === 'sync') {
+                Mail::to($data->email)->send($mail);
+            } else {
+                Mail::to($data->email)->queue($mail);
+            }
+        } catch (Throwable) {
+            Mail::to($data->email)->send($mail);
+        }
 
         return $invite;
     }
@@ -114,8 +130,8 @@ class RecipientInvitationService
                 'hospital_id' => $invite->hospital_id,
                 'recipient_verification_id' => $invite->id,
                 'blood_group' => $invite->blood_group,
-                'organ_needed' => 'Kidney',
-                'urgency_level' => 'medium',
+                'organ_needed' => $invite->organ_needed ?? 'Kidney',
+                'urgency_level' => $invite->urgency_level ?? 'medium',
                 'waiting_time' => 0,
                 'status' => 'REGISTERED',
                 'identity_type' => $data->identityType,
@@ -126,6 +142,9 @@ class RecipientInvitationService
                 'hospital_verified' => false,
                 'admin_approved' => false,
                 'flagged_for_review' => false,
+                'phone' => $invite->contact_number ?? $invite->phone,
+                'date_of_birth' => $invite->date_of_birth,
+                'gender' => $invite->gender,
             ]);
 
             $lockedInvite->update(['status' => 'Used']);

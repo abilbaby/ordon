@@ -101,14 +101,21 @@ class DonorController extends Controller
             return back()->with('error', 'Your donor account is pending admin verification and approval.');
         }
 
+        $request->merge([
+            'region' => $request->filled('region') ? trim((string) $request->input('region')) : null,
+            'medical_conditions' => $request->filled('medical_conditions') ? trim((string) $request->input('medical_conditions')) : null,
+            'family_contact' => $request->filled('family_contact') ? preg_replace('/\D+/', '', (string) $request->input('family_contact')) : null,
+            'notes' => $request->filled('notes') ? trim((string) $request->input('notes')) : null,
+        ]);
+
         $validated = $request->validate([
             'blood_group' => ['required', 'in:O-,O+,A-,A+,B-,B+,AB-,AB+'],
             'donation_type' => ['required', Rule::in(DonationType::values())],
             'organs' => ['required', 'array', 'min:1'],
             'organs.*' => ['required', Rule::in(OrganType::values())],
-            'region' => ['nullable', 'string', 'max:255'],
+            'region' => ['nullable', 'string', 'min:2', 'max:100'],
             'medical_conditions' => ['nullable', 'string', 'max:2000'],
-            'family_contact' => ['nullable', 'string', 'max:255'],
+            'family_contact' => ['nullable', 'digits_between:10,15'],
             'notes' => ['nullable', 'string', 'max:1000'],
             'is_available' => ['nullable', 'boolean'],
             'available_until' => ['nullable', 'date', 'after:now'],

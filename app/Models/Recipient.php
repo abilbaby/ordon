@@ -34,12 +34,19 @@ class Recipient extends Model
         'urgency_level',
         'waiting_time',
         'status',
+        'phone',
+        'address',
+        'date_of_birth',
+        'gender',
+        'emergency_contact_name',
+        'emergency_contact_phone',
     ];
 
     protected function casts(): array
     {
         return [
             'organs_needed' => 'array',
+            'date_of_birth' => 'date',
             'identity_verified' => 'boolean',
             'doctor_approved' => 'boolean',
             'hospital_verified' => 'boolean',

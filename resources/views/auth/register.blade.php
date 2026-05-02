@@ -9,7 +9,7 @@
         <p class="text-slate-500">Join as a donor, recipient with RVID, or hospital partner.</p>
     </div>
 
-    <form method="POST" action="{{ route('register') }}" x-data="{ role: @js(old('role', '')), submitting: false }" @submit="submitting = true" class="space-y-5">
+    <form method="POST" action="{{ route('register') }}" x-data="{ role: @js(old('role', '')), identityType: @js(old('identity_type', '')), submitting: false }" @submit="submitting = true" class="space-y-5">
         @csrf
 
         <div>
@@ -58,6 +58,7 @@
             <x-input-label for="name" :value="__('Full Name')" class="mb-2 text-slate-700 font-medium" />
             <x-text-input id="name" class="block w-full rounded-xl border-2 border-slate-200 px-4 py-3 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100 @error('name') border-rose-400 @enderror"
                 type="text" name="name" :value="old('name')" autofocus autocomplete="name" placeholder="Enter your full name"
+                minlength="2" maxlength="100" pattern="[A-Za-z ]+"
                 x-bind:required="role && role !== 'recipient'" x-bind:disabled="role === 'recipient' || !role" />
             <x-input-error :messages="$errors->get('name')" class="mt-2 text-red-500 text-sm" />
         </div>
@@ -85,7 +86,7 @@
                 <x-input-label for="identity_type" :value="__('Identity Type')" class="mb-2 text-slate-700 font-medium" />
                 <select id="identity_type" name="identity_type"
                     class="block w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-3 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100 @error('identity_type') border-rose-400 @enderror"
-                    :required="role === 'donor' || role === 'recipient'" :disabled="role !== 'donor' && role !== 'recipient'">
+                    x-model="identityType" :required="role === 'donor' || role === 'recipient'" :disabled="role !== 'donor' && role !== 'recipient'">
                     <option value="">Select identity type</option>
                     <option value="aadhaar" @selected(old('identity_type') === 'aadhaar')>Aadhaar</option>
                     <option value="passport" @selected(old('identity_type') === 'passport')>Passport</option>
@@ -101,6 +102,10 @@
                 <x-input-label for="identity_number" :value="__('Identity Number')" class="mb-2 text-slate-700 font-medium" />
                 <x-text-input id="identity_number" class="block w-full rounded-xl border-2 border-slate-200 px-4 py-3 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100 @error('identity_number') border-rose-400 @enderror"
                     type="text" name="identity_number" :value="old('identity_number')" placeholder="Enter your identity number"
+                    x-bind:maxlength="identityType === 'aadhaar' ? 12 : (identityType === 'pan' || identityType === 'voter_id' ? 10 : (identityType === 'passport' ? 9 : (identityType === 'driving_licence' ? 16 : 20)))"
+                    x-bind:inputmode="identityType === 'aadhaar' ? 'numeric' : 'text'"
+                    x-bind:pattern="identityType === 'aadhaar' ? '\\d{12}' : (identityType === 'pan' ? '[A-Za-z]{5}[0-9]{4}[A-Za-z]' : (identityType === 'passport' ? '[A-Za-z0-9]{6,9}' : (identityType === 'driving_licence' ? '[A-Za-z0-9]{10,16}' : (identityType === 'voter_id' ? '[A-Za-z0-9]{10}' : '[A-Za-z0-9]{5,20}'))))"
+                    @input="$el.value = identityType === 'aadhaar' ? $el.value.replace(/\D/g, '') : $el.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase()"
                     x-bind:required="role === 'donor' || role === 'recipient'" x-bind:disabled="role !== 'donor' && role !== 'recipient'" />
                 <x-input-error :messages="$errors->get('identity_number')" class="mt-2 text-red-500 text-sm" />
             </div>
@@ -111,6 +116,7 @@
                 <x-input-label for="hospital_name" :value="__('Hospital Name')" class="mb-2 text-slate-700 font-medium" />
                 <x-text-input id="hospital_name" class="block w-full rounded-xl border-2 border-slate-200 px-4 py-3 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100 @error('hospital_name') border-rose-400 @enderror"
                     type="text" name="hospital_name" :value="old('hospital_name')" placeholder="Enter hospital name"
+                    minlength="2" maxlength="100" pattern="[A-Za-z ]+"
                     x-bind:required="role === 'hospital'" x-bind:disabled="role !== 'hospital'" />
                 <x-input-error :messages="$errors->get('hospital_name')" class="mt-2 text-red-500 text-sm" />
             </div>
@@ -119,7 +125,8 @@
                 <x-input-label for="hospital_registration_id" :value="__('Hospital Registration ID')" class="mb-2 text-slate-700 font-medium" />
                 <x-text-input id="hospital_registration_id" class="block w-full rounded-xl border-2 border-slate-200 px-4 py-3 uppercase focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100 @error('hospital_registration_id') border-rose-400 @enderror"
                     type="text" name="hospital_registration_id" :value="old('hospital_registration_id')" placeholder="Enter hospital registration ID"
-                    x-bind:required="role === 'hospital'" x-bind:disabled="role !== 'hospital'" @input="$el.value = $el.value.toUpperCase()" />
+                    minlength="5" maxlength="20" pattern="[A-Za-z0-9]{5,20}"
+                    x-bind:required="role === 'hospital'" x-bind:disabled="role !== 'hospital'" @input="$el.value = $el.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase()" />
                 <x-input-error :messages="$errors->get('hospital_registration_id')" class="mt-2 text-red-500 text-sm" />
             </div>
 
@@ -127,6 +134,7 @@
                 <x-input-label for="hospital_location" :value="__('Hospital Location')" class="mb-2 text-slate-700 font-medium" />
                 <x-text-input id="hospital_location" class="block w-full rounded-xl border-2 border-slate-200 px-4 py-3 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100 @error('hospital_location') border-rose-400 @enderror"
                     type="text" name="hospital_location" :value="old('hospital_location')" placeholder="City, State"
+                    minlength="5" maxlength="255"
                     x-bind:required="role === 'hospital'" x-bind:disabled="role !== 'hospital'" />
                 <x-input-error :messages="$errors->get('hospital_location')" class="mt-2 text-red-500 text-sm" />
             </div>

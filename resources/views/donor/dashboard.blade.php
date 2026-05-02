@@ -71,7 +71,8 @@
                 </div>
                 <div>
                     <label class="block text-sm text-slate-600 mb-1">Region</label>
-                    <input name="region" value="{{ $donor->region }}" class="w-full rounded-xl border-slate-200" />
+                    <input name="region" value="{{ old('region', $donor->region) }}" class="w-full rounded-xl border-slate-200 @error('region') border-rose-400 @enderror" minlength="2" maxlength="100" />
+                    @error('region') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label class="block text-sm text-slate-600 mb-1">Organs (Multi-select)</label>
@@ -86,15 +87,18 @@
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm text-slate-600 mb-1">Medical Conditions</label>
-                    <textarea name="medical_conditions" class="w-full rounded-xl border-slate-200">{{ $donor->medical_conditions }}</textarea>
+                    <textarea name="medical_conditions" class="w-full rounded-xl border-slate-200 @error('medical_conditions') border-rose-400 @enderror" maxlength="2000">{{ old('medical_conditions', $donor->medical_conditions) }}</textarea>
+                    @error('medical_conditions') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label class="block text-sm text-slate-600 mb-1">Family Contact</label>
-                    <input name="family_contact" value="{{ $donor->family_contact }}" class="w-full rounded-xl border-slate-200" />
+                    <input name="family_contact" value="{{ old('family_contact', $donor->family_contact) }}" class="w-full rounded-xl border-slate-200 @error('family_contact') border-rose-400 @enderror" inputmode="numeric" minlength="10" maxlength="15" pattern="\d{10,15}" />
+                    @error('family_contact') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label class="block text-sm text-slate-600 mb-1">Donation Notes (Optional)</label>
-                    <input name="notes" value="{{ $donor->notes }}" class="w-full rounded-xl border-slate-200" />
+                    <input name="notes" value="{{ old('notes', $donor->notes) }}" class="w-full rounded-xl border-slate-200 @error('notes') border-rose-400 @enderror" maxlength="1000" />
+                    @error('notes') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label class="block text-sm text-slate-600 mb-1">Available Until</label>

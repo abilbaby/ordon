@@ -22,7 +22,7 @@
             </div>
             <div>
                 <label class="text-sm text-slate-600">Organ Needed</label>
-                <input name="organ_needed" value="{{ old('organ_needed', $recipient->organ_needed) }}" class="mt-1 form-control @error('organ_needed') form-control-invalid @enderror" required>
+                <input name="organ_needed" value="{{ old('organ_needed', $recipient->organ_needed) }}" class="mt-1 form-control @error('organ_needed') form-control-invalid @enderror" maxlength="255" required>
                 @error('organ_needed') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
             </div>
             <div>
@@ -41,17 +41,17 @@
             </div>
             <div>
                 <label class="text-sm text-slate-600">Region</label>
-                <input name="region" value="{{ old('region', $recipient->region) }}" class="mt-1 form-control @error('region') form-control-invalid @enderror">
+                <input name="region" value="{{ old('region', $recipient->region) }}" class="mt-1 form-control @error('region') form-control-invalid @enderror" minlength="2" maxlength="100">
                 @error('region') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
             </div>
             <div>
                 <label class="text-sm text-slate-600">Other Organs Needed (comma separated)</label>
-                <input name="organs_needed" value="{{ old('organs_needed', is_array($recipient->organs_needed ?? null) ? implode(', ', $recipient->organs_needed) : '') }}" class="mt-1 form-control @error('organs_needed') form-control-invalid @enderror" placeholder="Kidney, Liver">
+                <input name="organs_needed" value="{{ old('organs_needed', is_array($recipient->organs_needed ?? null) ? implode(', ', $recipient->organs_needed) : '') }}" class="mt-1 form-control @error('organs_needed') form-control-invalid @enderror" placeholder="Kidney, Liver" maxlength="255">
                 @error('organs_needed') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
             </div>
             <div class="md:col-span-2">
                 <label class="text-sm text-slate-600">Reason for correction</label>
-                <textarea name="reason" rows="3" class="mt-1 form-control @error('reason') form-control-invalid @enderror" required>{{ old('reason') }}</textarea>
+                <textarea name="reason" rows="3" class="mt-1 form-control @error('reason') form-control-invalid @enderror" maxlength="1000" required>{{ old('reason') }}</textarea>
                 @error('reason') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
             </div>
             <button class="md:col-span-2 rounded-xl bg-slate-900 text-white px-4 py-2.5 font-semibold disabled:cursor-not-allowed disabled:opacity-60" :disabled="submitting">
